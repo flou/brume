@@ -1,8 +1,7 @@
-# from os import curdir
-from subprocess import call
+import os # NOQA
 from glob import glob
-# from brume.stack import Stack
 from brume.template import Template
+from jinja2 import Template as Jinja
 
 
 def gather_templates(dir='.'):
@@ -20,10 +19,8 @@ def upload_templates(templates, bucket, path_prefix):
         t.upload(bucket, path_prefix)
 
 
-# bucket = 'iamflou'
-# path_prefix = 'cloudformation'
-# templates = gather_templates(curdir)
-# validate_templates(templates)
-# upload_templates(templates, bucket, path_prefix)
-git_branch = call(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-print(git_branch)
+def env(key):
+    return os.getenv(key, None)
+
+template = Jinja(open('brume.yml', 'r').read())
+print template.render(env=env)

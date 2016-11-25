@@ -27,14 +27,10 @@ class Stack():
         pass
 
     def create(self, stack_name):
-        client.create_stack(
-            StackName=stack_name,
-        )
+        pass
 
     def delete(self, stack_name):
-        client.create_stack(
-            StackName=stack_name,
-        )
+        pass
 
     def update(self, stack_name):
         pass

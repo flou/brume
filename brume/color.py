@@ -5,36 +5,43 @@ class Color():
 
     @staticmethod
     def for_status(status):
+        colors = {
+            'red': 1,
+            'green': 2,
+            'yellow': 3,
+            'grey': 8,
+        }
+
         colors_map = {
             # ERRORS
             # 1 == red
-            'CREATE_FAILED': 1,
-            'DELETE_FAILED': 1,
-            'UPDATE_FAILED': 1,
-            'ROLLBACK_IN_PROGRESS': 1,
-            'ROLLBACK_FAILED': 1,
-            'UPDATE_ROLLBACK_FAILED': 1,
+            'CREATE_FAILED': colors['red'],
+            'DELETE_FAILED': colors['red'],
+            'UPDATE_FAILED': colors['red'],
+            'ROLLBACK_IN_PROGRESS': colors['red'],
+            'ROLLBACK_FAILED': colors['red'],
+            'UPDATE_ROLLBACK_FAILED': colors['red'],
 
             # COMPLETE
             # 2 == green
-            'ROLLBACK_COMPLETE': 2,
-            'CREATE_COMPLETE': 2,
-            'DELETE_COMPLETE': 2,
-            'UPDATE_COMPLETE': 2,
-            'UPDATE_ROLLBACK_COMPLETE': 2,
+            'ROLLBACK_COMPLETE': colors['green'],
+            'CREATE_COMPLETE': colors['green'],
+            'DELETE_COMPLETE': colors['green'],
+            'UPDATE_COMPLETE': colors['green'],
+            'UPDATE_ROLLBACK_COMPLETE': colors['green'],
 
             # SUCCESS
             # 3 == yellow
-            'CREATE_IN_PROGRESS': 3,
-            'DELETE_IN_PROGRESS': 3,
-            'UPDATE_IN_PROGRESS': 3,
-            'UPDATE_ROLLBACK_IN_PROGRESS': 3,
-            'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': 3,
-            'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': 3,
+            'CREATE_IN_PROGRESS': colors['yellow'],
+            'DELETE_IN_PROGRESS': colors['yellow'],
+            'UPDATE_IN_PROGRESS': colors['yellow'],
+            'UPDATE_ROLLBACK_IN_PROGRESS': colors['yellow'],
+            'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': colors['yellow'],
+            'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': colors['yellow'],
 
             # SKIPPED
             # 8 == grey
-            'DELETE_SKIPPED': 8,
+            'DELETE_SKIPPED': colors['grey'],
         }
         return color(status, fg=colors_map[status])
 
