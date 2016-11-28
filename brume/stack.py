@@ -45,8 +45,10 @@ class Stack():
         try:
             client.describe_stacks(StackName=self.stack_name)
         except ClientError as e:
-            print(red('Stack [{}] does not exist'.format(self.stack_name)))
-            raise e
+            print(e)
+            if 'AlreadyExistsException' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
             # return False
         else:
             return True
