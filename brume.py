@@ -70,6 +70,14 @@ def deploy():
 
 
 @click.command()
+def delete():
+    """Delete a CloudFormation stack."""
+    stack = Stack(cf_config)
+    stack.delete()
+    stack.tail()
+
+
+@click.command()
 def validate():
     """Validate CloudFormation templates."""
     templates = collect_templates()
@@ -99,6 +107,7 @@ cli.add_command(create)
 cli.add_command(update)
 cli.add_command(deploy)
 cli.add_command(upload)
+cli.add_command(delete)
 cli.add_command(validate)
 cli.add_command(config)
 cli.add_command(events)
