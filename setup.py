@@ -19,5 +19,5 @@ setup(
     license='MIT',
     packages=['brume'],
     install_requires=required,
-    scripts=['scripts/brume.py']
+    scripts=['brume.py']
 )
