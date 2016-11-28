@@ -34,6 +34,13 @@ class Stack():
         self.tags = make_tags(conf['tags'])
         self.on_failure = conf.get('on_failure', self.on_failure)
 
+        self.stack_configuration = dict(
+            StackName=self.stack_name,
+            TemplateBody=open(self.template_body, 'r').read(),
+            Parameters=self.parameters,
+            Capabilities=self.capabilities,
+            Tags=self.tags)
+
     def stack_exists(self):
         try:
             client.describe_stacks(StackName=self.stack_name)
@@ -49,42 +56,46 @@ class Stack():
 
     def create(self):
         print('Deploying stack {}'.format(self.stack_name))
-        client.create_stack(
-            StackName=self.stack_name,
-            TemplateBody=open(self.template_body, 'r').read(),
-            Parameters=self.parameters,
-            Capabilities=self.capabilities,
-            Tags=self.tags,
-        )
+        try:
+            client.create_stack(**self.stack_configuration)
+        except ClientError as e:
+            if 'AlreadyExistsException' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
 
     def update(self):
         print('Updating stack {}'.format(self.stack_name))
-        client.update_stack(
-            StackName=self.stack_name,
-            TemplateBody=open(self.template_body, 'r').read(),
-            Parameters=self.parameters,
-            Capabilities=self.capabilities,
-            Tags=self.tags,
-        )
+        try:
+            client.update_stack(**self.stack_configuration)
+        except ClientError as e:
+            print(e)
+            if 'does not exist' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
+            if 'No updates are to be performed.' in e.message:
+                print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
+                exit(1)
 
     def create_or_update(self):
         print('Applying stack {}'.format(self.stack_name))
-        stack_configuration = dict(
-            StackName=self.stack_name,
-            TemplateBody=open(self.template_body, 'r').read(),
-            Parameters=self.parameters,
-            Capabilities=self.capabilities,
-            Tags=self.tags)
 
         try:
-            client.create_stack(stack_configuration)
-        except ClientError:
-            print('Stack {} already exists, updating it'.format(self.name))
-            client.update_stack(stack_configuration)
+            client.create_stack(**self.stack_configuration)
+        except ClientError as e:
+            if 'does not exist' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
+            if 'No updates are to be performed.' in e.message:
+                print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
+                exit(1)
+            print(e.message)
+            # if str(e)
+            print('Stack {} already exists, updating it'.format(self.stack_name))
+            client.update_stack(**self.stack_configuration)
 
-    # def delete(self):
-    #     print('Not implemented')
-    #     pass
+    def delete(self):
+        print('Deleting stack {}'.format(self.stack_name))
+        client.delete_stack(StackName=self.stack_name)
 
     def get_events(self):
         self.stack_exists()
