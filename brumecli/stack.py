@@ -41,20 +41,18 @@ class Stack():
             Capabilities=self.capabilities,
             Tags=self.tags)
 
-    def stack_exists(self):
+    @staticmethod
+    def exists(stack_name):
         try:
-            client.describe_stacks(StackName=self.stack_name)
+            client.describe_stacks(StackName=stack_name)
         except ClientError as e:
             print(e)
             if 'AlreadyExistsException' in e.message:
-                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                print(red('Stack [{}] does not exist'.format(stack_name)))
                 exit(1)
             # return False
         else:
             return True
-
-    def describe_resources():
-        pass
 
     def create(self):
         print('Deploying stack {}'.format(self.stack_name))
@@ -80,7 +78,6 @@ class Stack():
 
     def create_or_update(self):
         print('Applying stack {}'.format(self.stack_name))
-
         try:
             client.create_stack(**self.stack_configuration)
         except ClientError as e:
@@ -91,7 +88,6 @@ class Stack():
                 print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
                 exit(1)
             print(e.message)
-            # if str(e)
             print('Stack {} already exists, updating it'.format(self.stack_name))
             client.update_stack(**self.stack_configuration)
 
@@ -100,7 +96,7 @@ class Stack():
         client.delete_stack(StackName=self.stack_name)
 
     def get_events(self):
-        self.stack_exists()
+        Stack.exists(self.stack_name)
         event_list = []
         params = dict(StackName=self.stack_name)
         while True:
