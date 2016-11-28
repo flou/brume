@@ -2,3 +2,4 @@ boto3==1.4.1
 ansicolors==1.0.2
 click==6.6
 PyYAML==3.12
+Jinja2==2.8
