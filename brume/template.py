@@ -7,6 +7,7 @@ s3_client = boto3.client('s3')
 
 
 class InvalidTemplateError(BaseException):
+
     def __init__(self, m):
         self.m = m
 
@@ -14,7 +15,8 @@ class InvalidTemplateError(BaseException):
         return self.m
 
 
-class CfnTemplate():
+class Template():
+
     def __init__(self, file):
         self.file = file
         try:
@@ -40,7 +42,8 @@ class CfnTemplate():
 
     def upload(self, bucket, path):
         self.key = path.strip('/') + '/' + self.file
-        self.public_url = 'https://{}.s3.amazonaws.com/{}'.format(bucket, self.key)
+        self.public_url = 'https://{}.s3.amazonaws.com/{}'.format(
+            bucket, self.key)
         print("Publishing {} to {}".format(self.file, self.public_url))
         s3_client.put_object(
             Bucket=bucket,
