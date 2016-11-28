@@ -4,6 +4,7 @@ import os
 import click
 import yaml
 
+from colors import red
 from glob import glob
 from subprocess import check_output
 from brume.template import CfnTemplate
@@ -16,7 +17,11 @@ def load_configuration(config_file='brume.yml'):
 
     def env(key):
         """Return the value of the `key` environment variable."""
-        return os.getenv(key, None)
+        try:
+            os.environ[key]
+        except KeyError:
+            print(red('[ERROR] No environment variable with key {}'.format(key)))
+            exit(1)
 
     def git_commit():
         """Return the SHA1 of the latest Git commit (HEAD)."""
