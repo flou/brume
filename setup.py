@@ -4,7 +4,7 @@ from setuptools import setup
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
-with open('moustack/__init__.py', 'r') as fd:
+with open('brume/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
 
@@ -19,4 +19,5 @@ setup(
     license="MIT",
     packages=['brume'],
     install_requires=required,
+    scripts=['scripts/brume.py']
 )
