@@ -1,21 +1,26 @@
 ---
-region: '{{ env('AWS_REGION') }}'
-
-templates:
-  s3_bucket: 'bucket-{{ env('CUSTOMER') }}-cf-infra'
-  s3_prefix: {{ env('STACK_NAME') }}
+region: {{ env('AWS_REGION') }}
 
 stack:
-  stack_name: {{ env('STACK_NAME') }}
-  template_body: cloudformation/Main.cform
-  capabilities: ["CAPABILITY_IAM"]
+  stack_name: &stack_name
+    {{ '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) }}
+
+  template_body: Main.cform
+  capabilities: [ CAPABILITY_IAM ]
+  on_failure: DELETE
+
   parameters:
     Project: '{{ env('PROJECT') }}'
-    Classifier: '{{ env('CLASSIFIER') }}'
     Environment: '{{ env('ENVIRONMENT') }}'
-    {# GitBranch: '{{ `git rev-parse --abbrev-ref HEAD`.chomp }}' #}
-    {# GitCommit: '{{ `git rev-parse --short HEAD`.chomp }}' #}
+    Classifier:  '{{ env('CLASSIFIER') }}'
+    GitCommit:  '{{ git_commit }}'
+    GitBranch:  '{{ git_branch }}'
+
   tags:
     Project: '{{ env('PROJECT') }}'
-    Classifier: '{{ env('CLASSIFIER') }}'
     Environment: '{{ env('ENVIRONMENT') }}'
+    Classifier:  '{{ env('CLASSIFIER') }}'
+
+templates:
+  s3_bucket: my_bucket
+  s3_prefix: *stack_name
