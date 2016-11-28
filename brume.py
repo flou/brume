@@ -5,18 +5,30 @@ import click
 import yaml
 
 from glob import glob
+from subprocess import check_output
 from brume.template import CfnTemplate
 from brume.stack import Stack
 
 
 def load_configuration(config_file='brume.yml'):
+    """Return the YAML configuration for a project based on the `config_file` template."""
     from jinja2 import Template
 
     def env(key):
+        """Return the value of the `key` environment variable."""
         return os.getenv(key, None)
 
+    def git_commit():
+        """Return the SHA1 of the latest Git commit (HEAD)."""
+        return check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+
+    def git_branch():
+        """Return the name of the current Git branch."""
+        return check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+
     template = Template(open(config_file, 'r').read())
-    return yaml.load(template.render(env=env))
+    return yaml.load(template.render(env=env, git_commit=git_commit(), git_branch=git_branch()))
+
 
 conf = load_configuration()
 s3_config = conf['templates']
