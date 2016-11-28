@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import click
 import yaml
 import brumecli
@@ -8,12 +9,14 @@ from glob import glob
 
 
 conf = brumecli.Config.load('brume.yml')
-s3_config = conf['templates']
+templates_config = conf['templates']
 cf_config = conf['stack']
 
 
 def collect_templates():
-    return [brumecli.CfnTemplate(t) for t in glob('*.cform')]
+    """Convert every .cform template into a Template."""
+    templates = glob(os.path.join(templates_config['local_path'], '*.cform'))
+    return [brumecli.Template(t) for t in templates]
 
 
 @click.command()
@@ -62,18 +65,12 @@ def validate():
 
 
 @click.command()
-def events():
-    """Tail the events of the stack."""
-    brumecli.Stack(cf_config).tail()
-
-
-@click.command()
-@click.option('--bucket', required=True, help='Name of the bucket')
-@click.option('--prefix', required=True, help='Prefix to the file name')
-def upload(templates, bucket, path_prefix):
+def upload():
     """Upload CloudFormation templates to S3."""
-    [t.upload(bucket, path_prefix) for t in templates]
-    return templates
+    s3_bucket = templates_config['s3_bucket']
+    s3_prefix = templates_config['s3_prefix']
+    templates = collect_templates()
+    [t.upload(s3_bucket, s3_prefix) for t in templates]
 
 
 @click.group()
@@ -87,7 +84,6 @@ cli.add_command(upload)
 cli.add_command(delete)
 cli.add_command(validate)
 cli.add_command(config)
-cli.add_command(events)
 
 if __name__ == '__main__':
     cli()
