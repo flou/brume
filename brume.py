@@ -7,8 +7,7 @@ import yaml
 from colors import red
 from glob import glob
 from subprocess import check_output
-from brume.template import CfnTemplate
-from brume.stack import Stack
+import brume
 
 
 def load_configuration(config_file='brume.yml'):
@@ -41,7 +40,7 @@ cf_config = conf['stack']
 
 
 def collect_templates():
-    return [CfnTemplate(t) for t in glob('*.cform')]
+    return [brume.CfnTemplate(t) for t in glob('*.cform')]
 
 
 @click.command()
@@ -53,7 +52,7 @@ def config():
 @click.command()
 def create():
     """Create a new CloudFormation stack."""
-    stack = Stack(cf_config)
+    stack = brume.Stack(cf_config)
     stack.create()
     stack.tail()
 
@@ -61,7 +60,7 @@ def create():
 @click.command()
 def update():
     """Update an existing CloudFormation stack."""
-    stack = Stack(cf_config)
+    stack = brume.Stack(cf_config)
     stack.update()
     stack.tail()
 
@@ -69,7 +68,7 @@ def update():
 @click.command()
 def deploy():
     """Create or update a CloudFormation stack."""
-    stack = Stack(cf_config)
+    stack = brume.Stack(cf_config)
     stack.create_or_update()
     stack.tail()
 
@@ -77,7 +76,7 @@ def deploy():
 @click.command()
 def delete():
     """Delete a CloudFormation stack."""
-    stack = Stack(cf_config)
+    stack = brume.Stack(cf_config)
     stack.delete()
     stack.tail()
 
@@ -92,7 +91,7 @@ def validate():
 @click.command()
 def events():
     """Tail the events of the stack."""
-    Stack(cf_config).tail()
+    brume.Stack(cf_config).tail()
 
 
 @click.command()
