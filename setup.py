@@ -14,9 +14,9 @@ if not version:
 setup(
     name='brume',
     version=version,
-    description="AWS Cloudformation deployer",
-    url="",
-    license="MIT",
+    description='AWS Cloudformation deployer',
+    url='',
+    license='MIT',
     packages=['brume'],
     install_requires=required,
     scripts=['scripts/brume.py']
