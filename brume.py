@@ -6,7 +6,7 @@ import yaml
 
 from colors import red
 from glob import glob
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 import brume
 
 
@@ -17,18 +17,26 @@ def load_configuration(config_file='brume.yml'):
     def env(key):
         """Return the value of the `key` environment variable."""
         try:
-            os.environ[key]
+            return os.environ[key]
         except KeyError:
             print(red('[ERROR] No environment variable with key {}'.format(key)))
             exit(1)
 
     def git_commit():
         """Return the SHA1 of the latest Git commit (HEAD)."""
-        return check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+        try:
+            return check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+        except CalledProcessError:
+            print(red('[ERROR] Current directory is not a Git repository'))
+            exit(1)
 
     def git_branch():
         """Return the name of the current Git branch."""
-        return check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+        try:
+            return check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+        except CalledProcessError:
+            print(red('[ERROR] Current directory is not a Git repository'))
+            exit(1)
 
     template = Template(open(config_file, 'r').read())
     return yaml.load(template.render(env=env, git_commit=git_commit(), git_branch=git_branch()))
