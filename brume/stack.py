@@ -1,17 +1,38 @@
 import time
+import os
 import boto3
 from color import Color
 from colors import red
 from botocore.exceptions import ClientError
-from argparse import ArgumentParser
 
 client = boto3.client('cloudformation')
 
 
+def env(key):
+    return os.getenv(key, None)
+
+
+def make_tags(tags_list):
+    return [{"Key": k, "Value": v} for k, v in tags_list.items()]
+
+
+def make_parameters(tags_list):
+    return [{"ParameterKey": k, "ParameterValue": v} for k, v in tags_list.items()]
+
+
 class Stack():
-    def __init__(self, stack_name):
-        self.stack_name = stack_name
-        self.url = None
+    stack_name = None
+    parameters = {}
+    capabilities = []
+    tags = {}
+    on_failure = 'ROLLBACK'
+
+    def __init__(self, conf):
+        self.stack_name = conf['stack_name']
+        self.template_body = conf['template_body']
+        self.parameters = make_parameters(conf.get('parameters', self.parameters))
+        self.tags = make_tags(conf['tags'])
+        self.on_failure = conf.get('on_failure', self.on_failure)
 
     def stack_exists(self):
         try:
@@ -26,14 +47,44 @@ class Stack():
     def describe_resources():
         pass
 
-    def create(self, stack_name):
-        pass
+    def create(self):
+        print('Deploying stack {}'.format(self.stack_name))
+        client.create_stack(
+            StackName=self.stack_name,
+            TemplateBody=open(self.template_body, 'r').read(),
+            Parameters=self.parameters,
+            Capabilities=self.capabilities,
+            Tags=self.tags,
+        )
 
-    def delete(self, stack_name):
-        pass
+    def update(self):
+        print('Updating stack {}'.format(self.stack_name))
+        client.update_stack(
+            StackName=self.stack_name,
+            TemplateBody=open(self.template_body, 'r').read(),
+            Parameters=self.parameters,
+            Capabilities=self.capabilities,
+            Tags=self.tags,
+        )
 
-    def update(self, stack_name):
-        pass
+    def create_or_update(self):
+        print('Applying stack {}'.format(self.stack_name))
+        stack_configuration = dict(
+            StackName=self.stack_name,
+            TemplateBody=open(self.template_body, 'r').read(),
+            Parameters=self.parameters,
+            Capabilities=self.capabilities,
+            Tags=self.tags)
+
+        try:
+            client.create_stack(stack_configuration)
+        except ClientError:
+            print('Stack {} already exists, updating it'.format(self.name))
+            client.update_stack(stack_configuration)
+
+    # def delete(self):
+    #     print('Not implemented')
+    #     pass
 
     def get_events(self):
         self.stack_exists()
@@ -49,6 +100,7 @@ class Stack():
         return reversed(event_list[0]['StackEvents'])
 
     def tail(self, sleep_time=5):
+        print('Polling for events...')
         try:
             seen = set()
             initial_events = self.get_events()
@@ -89,16 +141,3 @@ class Stack():
             e['ResourceType'],
             e.get('ResourceStatusReason', ''),
         ))
-
-
-def parse_args():
-    """Parse command line arguments."""
-    parser = ArgumentParser(
-        description='Compile your configuration to CloudFormation templates.')
-    parser.add_argument('-s', '--stack-name', required=True, help='The stack')
-    args = parser.parse_args()
-    return args
-
-if __name__ == '__main__':
-    args = parse_args()
-    Stack(args.stack_name).tail()
