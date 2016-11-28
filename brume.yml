@@ -24,3 +24,4 @@ stack:
 templates:
   s3_bucket: my_bucket
   s3_prefix: *stack_name
+  local_path: cloudformation
