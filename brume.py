@@ -12,7 +12,7 @@ cf_config = conf['stack']
 
 
 def collect_templates():
-    return [brume.Template(t) for t in glob('*.cform')]
+    return [brume.CfnTemplate(t) for t in glob('*.cform')]
 
 
 @click.command()

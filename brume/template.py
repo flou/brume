@@ -15,7 +15,7 @@ class InvalidTemplateError(BaseException):
         return self.m
 
 
-class Template():
+class CfnTemplate():
 
     def __init__(self, file):
         self.file = file

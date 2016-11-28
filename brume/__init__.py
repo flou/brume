@@ -4,4 +4,4 @@ __version__ = '0.0.1'
 from .config import Config
 from .color import Color
 from .stack import Stack
-from .template import Template
+from .template import CfnTemplate
