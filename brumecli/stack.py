@@ -30,6 +30,7 @@ class Stack():
     def __init__(self, conf):
         self.stack_name = conf['stack_name']
         self.template_body = conf['template_body']
+        self.capabilities = conf.get('capabilities', self.capabilities)
         self.parameters = make_parameters(conf.get('parameters', self.parameters))
         self.tags = make_tags(conf['tags'])
         self.on_failure = conf.get('on_failure', self.on_failure)
