@@ -47,7 +47,7 @@ class Stack():
         try:
             client.describe_stacks(StackName=stack_name)
         except ClientError as e:
-            print(e)
+            # print(e)
             if 'AlreadyExistsException' in e.message:
                 print(red('Stack [{}] does not exist'.format(stack_name)))
                 exit(1)
@@ -59,6 +59,7 @@ class Stack():
         print('Deploying stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
+            self.tail()
         except ClientError as e:
             if 'AlreadyExistsException' in e.message:
                 print(red('Stack [{}] does not exist'.format(self.stack_name)))
@@ -68,8 +69,8 @@ class Stack():
         print('Updating stack {}'.format(self.stack_name))
         try:
             client.update_stack(**self.stack_configuration)
+            self.tail()
         except ClientError as e:
-            print(e)
             if 'does not exist' in e.message:
                 print(red('Stack [{}] does not exist'.format(self.stack_name)))
                 exit(1)
@@ -81,6 +82,7 @@ class Stack():
         print('Applying stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
+            self.tail()
         except ClientError as e:
             if 'does not exist' in e.message:
                 print(red('Stack [{}] does not exist'.format(self.stack_name)))
@@ -89,12 +91,17 @@ class Stack():
                 print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
                 exit(1)
             print(e.message)
-            print('Stack {} already exists, updating it'.format(self.stack_name))
-            client.update_stack(**self.stack_configuration)
+            print('Stack {} already exists'.format(self.stack_name))
+            self.update()
 
     def delete(self):
         print('Deleting stack {}'.format(self.stack_name))
-        client.delete_stack(StackName=self.stack_name)
+        try:
+            client.delete_stack(StackName=self.stack_name)
+            self.tail()
+        except ClientError:
+            # if 'does not exist' in e.message:
+            exit(1)
 
     def get_events(self):
         Stack.exists(self.stack_name)
@@ -111,26 +118,27 @@ class Stack():
 
     def tail(self, sleep_time=5):
         print('Polling for events...')
-        try:
-            seen = set()
-            initial_events = self.get_events()
-            self.print_log_headers()
-            for e in initial_events:
-                self._log_event(e)
-                seen.add(e['EventId'])
+        error = False
+        seen = set()
+        initial_events = self.get_events()
+        self.print_log_headers()
+        for e in initial_events:
+            self._log_event(e)
+            seen.add(e['EventId'])
 
-            while True:
-                events = self.get_events()
-                for e in events:
-                    if e['EventId'] not in seen:
-                        self._log_event(e)
-                        seen.add(e['EventId'])
-                if self.stack_complete(e):
-                    break
-                time.sleep(sleep_time)
-        except ClientError as e:
-            # The stack does not exist
-            pass
+        while True:
+            events = self.get_events()
+            for e in events:
+                if e['EventId'] not in seen:
+                    self._log_event(e)
+                    seen.add(e['EventId'])
+                    if 'FAILED' in e['ResourceStatus']:
+                        error = True
+            if self.stack_complete(e):
+                if error:
+                    exit(1)
+                break
+            time.sleep(sleep_time)
 
     def stack_complete(self, e):
         if e['LogicalResourceId'] == self.stack_name and e['ResourceStatus'].endswith('COMPLETE'):
@@ -139,12 +147,12 @@ class Stack():
             return False
 
     def print_log_headers(self):
-        print('{:23s} {:36s} {:30s} {:30s} {}'.format(
+        print('{:20s} {:36s} {:30s} {:30s} {}'.format(
             'Timestamp', 'Status', 'Resource', 'Type', 'Reason'
         ))
 
     def _log_event(self, e):
-        print('{:23s} {:49s} {:30s} {:30s} {}'.format(
+        print('{:20s} {:49s} {:30s} {:30s} {}'.format(
             e['Timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
             Color.for_status(e['ResourceStatus']),
             e['LogicalResourceId'],
