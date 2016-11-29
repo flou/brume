@@ -30,7 +30,6 @@ def create():
     """Create a new CloudFormation stack."""
     stack = brumecli.Stack(cf_config)
     stack.create()
-    stack.tail()
 
 
 @click.command()
@@ -38,7 +37,6 @@ def update():
     """Update an existing CloudFormation stack."""
     stack = brumecli.Stack(cf_config)
     stack.update()
-    stack.tail()
 
 
 @click.command()
@@ -46,7 +44,6 @@ def deploy():
     """Create or update a CloudFormation stack."""
     stack = brumecli.Stack(cf_config)
     stack.create_or_update()
-    stack.tail()
 
 
 @click.command()
@@ -54,7 +51,6 @@ def delete():
     """Delete a CloudFormation stack."""
     stack = brumecli.Stack(cf_config)
     stack.delete()
-    stack.tail()
 
 
 @click.command()
