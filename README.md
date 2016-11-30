@@ -30,9 +30,9 @@ The configuration file requires two configuration blocks `stack` and `templates`
 
 ```yaml
 stack:
-  stack_name: my-wordpress-website   # the name of the CloudFormation stack
+  stack_name: my-wordpress-website   # [REQUIRED] the name of the CloudFormation stack
   template_body: Main.cform          # local path to the main CloudFormation template
-  template_url: https://my-bucket.s3.amazonaws.com/Main.cform  # complete URL to the main CloudFormation template on S3
+  template_url: https://my-bucket.s3.amazonaws.com/assets/cloudformation/Main.cform  # complete URL to the main CloudFormation template on S3
 ```
 
 The template referenced in `stack.template_body` or `stack.template_url` is the entrypoint to your CloudFormation stack (the main or parent stack).
@@ -45,12 +45,12 @@ If you use `brume upload`, you need to tell brume where the templates are and wh
 
 ```yaml
 templates:
-  s3_bucket: my-bucket                # name of the bucket in your account in which to store the templates
-  s3_path: assets/cloudformation      # the path of the S3 folder where the template are uploaded
-  local_path: project/cloudformation  # local path where your CloudFormation templates are
+  s3_bucket: my-bucket            # [REQUIRED] name of the bucket in your account in which to store the templates
+  s3_path: assets/cloudformation  # path of the S3 folder where the template are uploaded, defaults to `cloudformation`
+  local_path: project/cfn         # local path where your CloudFormation templates are, defaults to `.`
 ```
 
-Given the above configuration and if you have a `Main.cform` in the `project/cloudformation`, the template would be uploaded to `https://my-bucket.s3.amazonaws.com/assets/cloudformation/Main.cform`.
+Given the above configuration and if you have a `Main.cform` in `project/cfn`, the template would be uploaded to `https://my-bucket.s3.amazonaws.com/assets/cloudformation/Main.cform`.
 
 ### Minimal example
 

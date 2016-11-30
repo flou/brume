@@ -1,8 +1,8 @@
 ---
 region: {{ env('AWS_REGION') }}
 
+{% set stack_name = '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) %}
 stack:
-  {% set stack_name = '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) %}
   stack_name: {{ stack_name }}
 
   template_body: Main.cform
