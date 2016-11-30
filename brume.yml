@@ -2,8 +2,8 @@
 region: {{ env('AWS_REGION') }}
 
 stack:
-  stack_name: &stack_name
-    {{ '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) }}
+  {% set stack_name = '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) %}
+  stack_name: {{ stack_name }}
 
   template_body: Main.cform
   capabilities: [ CAPABILITY_IAM ]
@@ -23,5 +23,5 @@ stack:
 
 templates:
   s3_bucket: my_bucket
-  s3_path: *stack_name
+  s3_path: {{ stack_name }}
   local_path: cloudformation

@@ -68,20 +68,18 @@ templates:
 
 ### Complete example
 
-`brume.yml` is in fact a Jinja2 template and can embed environment variable by calling `{{ env('MY_VAR') }}`.
+`brume.yml` is in fact a Jinja2 template which means you can declare variables and reuse them in the template. You can also inject environment variables by calling `{{ env('MY_VAR') }}`.
 
-Also, if the current directory is a git repository (if it contains a `.git/` directory), brume offers two pre-defined variables: `git_commit` and `git_branch`.
+Also, if the current directory is a git repository (if it contains a `.git/` directory), `brume` offers two pre-defined variables: `git_commit` and `git_branch`.
 Their values are taken directly from the current repository.
 
 ```yaml
 ---
 region: {{ env('AWS_REGION') }}
 
+{% set stack_name = '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) %}
 stack:
-  # Since this is YAML we can define and anchor using the
-  # &anchor notation and reuse this later in the template
-  stack_name: &stack_name
-    {{ '-'.join([env('PROJECT'), env('PLATFORM'), env('CLASSIFIER')]) }}
+  stack_name: {{ stack_name }}
 
   template_body: Main.cform
   capabilities: [ CAPABILITY_IAM ]
@@ -101,6 +99,6 @@ stack:
 
 templates:
   s3_bucket: my_bucket
-  s3_path: *stack_name     # This is a reference to &stack_name
+  s3_path: {{ stack_name }}
   local_path: cloudformation
 ```
