@@ -1,3 +1,4 @@
+import os
 import boto3
 import sys
 from colors import green, red
@@ -16,22 +17,36 @@ class InvalidTemplateError(BaseException):
 
 
 class Template():
+    key = None
 
-    def __init__(self, file):
+    def __init__(self, file, config):
         self.file = file
+        self.s3_bucket = config['s3_bucket']
+        self.public_url = self.public_url(config)
+
+    def public_url(self, config):
+        local_path = config.get('local_path', '')
+        if local_path != '.':
+            file = self.file.replace(local_path, '')
+        else:
+            file = self.file
+        s3_path = config.get('s3_path', 'cloudformation')
+        self.key = os.path.normpath('{}/{}'.format(s3_path, file)).strip('/')
+        url = os.path.normpath('{}.s3.amazonaws.com/{}'.format(self.s3_bucket, self.key))
+        return 'https://{}'.format(url)
+
+    def content(self):
         try:
-            self.content = open(file, 'r').read()
+            return open(self.file, 'r').read()
         except IOError as e:
-            print(red('File {!r} does not exist'.format(file)))
+            print(red('File {!r} does not exist'.format(self.file)))
             raise e
-        self.public_url = ''
-        self.key = ''
 
     def validate(self):
         sys.stdout.write('Validating {} ... '.format(self.file))
         cfn_client = boto3.client('cloudformation')
         try:
-            cfn_client.validate_template(TemplateBody=self.content)
+            cfn_client.validate_template(TemplateBody=self.content())
         except ClientError as e:
             print(red('invalid'))
             print(e)
@@ -40,15 +55,12 @@ class Template():
             print(green('valid'))
         return self
 
-    def upload(self, bucket, path):
-        self.key = path.strip('/') + '/' + self.file
-        self.public_url = 'https://{}.s3.amazonaws.com/{}'.format(
-            bucket, self.key)
-        print("Publishing {} to {}".format(self.file, self.public_url))
+    def upload(self):
+        print('Publishing {} to {}'.format(self.file, self.public_url))
         s3_client.put_object(
-            Bucket=bucket,
-            Body=self.content,
+            Bucket=self.s3_bucket,
+            Body=self.content(),
             ACL='public-read',
-            Key=path + '/' + self.file
+            Key=self.key
         )
         return self

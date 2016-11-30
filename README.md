@@ -30,8 +30,8 @@ The configuration file requires two configuration blocks `stack` and `templates`
 
 ```yaml
 stack:
-  stack_name: my-wordpress-website                             # the name of the CloudFormation stack
-  template_body: Main.cform                                    # local path to the main CloudFormation template
+  stack_name: my-wordpress-website   # the name of the CloudFormation stack
+  template_body: Main.cform          # local path to the main CloudFormation template
   template_url: https://my-bucket.s3.amazonaws.com/Main.cform  # complete URL to the main CloudFormation template on S3
 ```
 
@@ -46,7 +46,7 @@ If you use `brume upload`, you need to tell brume where the templates are and wh
 ```yaml
 templates:
   s3_bucket: my-bucket                # name of the bucket in your account in which to store the templates
-  s3_prefix: assets/cloudformation    # the prefix that will be the path of every template on S3
+  s3_path: assets/cloudformation      # the path of the S3 folder where the template are uploaded
   local_path: project/cloudformation  # local path where your CloudFormation templates are
 ```
 
@@ -101,6 +101,6 @@ stack:
 
 templates:
   s3_bucket: my_bucket
-  s3_prefix: *stack_name     # This is a reference to &stack_name
+  s3_path: *stack_name     # This is a reference to &stack_name
   local_path: cloudformation
 ```

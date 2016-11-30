@@ -15,8 +15,8 @@ cf_config = conf['stack']
 
 def collect_templates():
     """Convert every .cform template into a Template."""
-    templates = glob(os.path.join(templates_config['local_path'], '*.cform'))
-    return [brumecli.Template(t) for t in templates]
+    templates = glob(os.path.join(templates_config.get('local_path', ''), '*.cform'))
+    return [brumecli.Template(t, templates_config) for t in templates]
 
 
 @click.command()
@@ -63,10 +63,8 @@ def validate():
 @click.command()
 def upload():
     """Upload CloudFormation templates to S3."""
-    s3_bucket = templates_config['s3_bucket']
-    s3_prefix = templates_config['s3_prefix']
     templates = collect_templates()
-    [t.upload(s3_bucket, s3_prefix) for t in templates]
+    [t.upload() for t in templates]
 
 
 @click.group()
