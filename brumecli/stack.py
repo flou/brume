@@ -1,7 +1,6 @@
 import time
 import os
 import boto3
-from color import Color
 from colors import red
 from botocore.exceptions import ClientError
 
@@ -147,14 +146,14 @@ class Stack():
             return False
 
     def print_log_headers(self):
-        print('{:20s} {:36s} {:30s} {:30s} {}'.format(
+        print('{:23s} {:36s} {:30s} {:30s} {}'.format(
             'Timestamp', 'Status', 'Resource', 'Type', 'Reason'
         ))
 
     def _log_event(self, e):
-        print('{:20s} {:49s} {:30s} {:30s} {}'.format(
-            e['Timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
-            Color.for_status(e['ResourceStatus']),
+        print('{:23s} {:36s} {:30s} {:30s} {}'.format(
+            e['Timestamp'].strftime('%Y-%m-%d %H:%M:%S UTC'),
+            e['ResourceStatus'],
             e['LogicalResourceId'],
             e['ResourceType'],
             e.get('ResourceStatusReason', ''),
