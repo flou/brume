@@ -60,7 +60,6 @@ class Template():
         s3_client.put_object(
             Bucket=self.s3_bucket,
             Body=self.content(),
-            ACL='public-read',
             Key=self.key
         )
         return self
