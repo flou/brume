@@ -111,8 +111,9 @@ class Stack():
             event_list.append(events)
             if 'NextToken' not in events:
                 break
-            params.NextToken = events.NextToken
-            time.sleep(1)
+            else:
+                params.NextToken = events.NextToken
+                time.sleep(1)
         return reversed(event_list[0]['StackEvents'])
 
     def tail(self, sleep_time=5):
