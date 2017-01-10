@@ -57,6 +57,6 @@ class Config():
             print(e)
             exit(1)
         else:
-            yaml.load(
+            return yaml.load(
                 template.render(**template_functions)
             )
