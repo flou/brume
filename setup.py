@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name='brume',
-    version='0.0.1',
+    version='0.0.5',
     description='AWS Cloudformation deployer',
     url='',
     author='ekino',
