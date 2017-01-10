@@ -63,6 +63,12 @@ def delete():
 
 
 @click.command()
+def status():
+    """Get the status of a CloudFormation stack."""
+    Stack(cf_config).status()
+
+
+@click.command()
 def validate():
     """Validate CloudFormation templates."""
     templates = collect_templates()
@@ -87,6 +93,7 @@ cli.add_command(upload)
 cli.add_command(delete)
 cli.add_command(validate)
 cli.add_command(config)
+cli.add_command(status)
 
 if __name__ == '__main__':
     cli()

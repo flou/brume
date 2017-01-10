@@ -102,6 +102,15 @@ class Stack():
             # if 'does not exist' in e.message:
             exit(1)
 
+    def status(self):
+        try:
+            stacks = client.describe_stacks(StackName=self.stack_name)
+            print(next(s['StackStatus'] for s in stacks['Stacks']))
+        except ClientError as e:
+            if 'does not exist' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
+
     def get_events(self):
         Stack.exists(self.stack_name)
         event_list = []
