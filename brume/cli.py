@@ -1,55 +1,51 @@
-#!/usr/bin/env python
-
-import os
 import click
-import yaml
-import brumecli
 
 from glob import glob
+from os import path
+from yaml import dump
 
-
-conf = brumecli.Config.load('brume.yml')
-templates_config = conf['templates']
-cf_config = conf['stack']
+from config import Config
+from stack import Stack
+from template import Template
 
 
 def collect_templates():
     """Convert every .cform template into a Template."""
-    templates = glob(os.path.join(templates_config.get('local_path', ''), '*.cform'))
-    return [brumecli.Template(t, templates_config) for t in templates]
+    templates = glob(path.join(templates_config.get('local_path', ''), '*.cform'))
+    return [Template(t, templates_config) for t in templates]
 
 
 @click.command()
 def config():
     """Print the current stack confguration."""
-    print(yaml.dump(conf))
+    print(dump(conf))
 
 
 @click.command()
 def create():
     """Create a new CloudFormation stack."""
-    stack = brumecli.Stack(cf_config)
+    stack = Stack(cf_config)
     stack.create()
 
 
 @click.command()
 def update():
     """Update an existing CloudFormation stack."""
-    stack = brumecli.Stack(cf_config)
+    stack = Stack(cf_config)
     stack.update()
 
 
 @click.command()
 def deploy():
     """Create or update a CloudFormation stack."""
-    stack = brumecli.Stack(cf_config)
+    stack = Stack(cf_config)
     stack.create_or_update()
 
 
 @click.command()
 def delete():
     """Delete a CloudFormation stack."""
-    stack = brumecli.Stack(cf_config)
+    stack = Stack(cf_config)
     stack.delete()
 
 
@@ -80,4 +76,7 @@ cli.add_command(validate)
 cli.add_command(config)
 
 if __name__ == '__main__':
+    conf = Config.load('brume.yml')
+    templates_config = conf['templates']
+    cf_config = conf['stack']
     cli()

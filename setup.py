@@ -4,12 +4,16 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='brumecli',
+    name='brume',
     version='0.0.1',
     description='AWS Cloudformation deployer',
     url='',
     license='MIT',
-    packages=['brumecli'],
+    packages=['brume'],
     install_requires=required,
-    scripts=['brume']
+    entrypoints={
+        'console_scripts': [
+            'brume = brume.cli:cli'
+        ]
+    }
 )
