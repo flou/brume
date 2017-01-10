@@ -51,7 +51,12 @@ class Config():
             template_functions['git_commit'] = Config.git_commit()
             template_functions['git_branch'] = Config.git_branch()
 
-        template = Template(open(config_file, 'r').read())
-        return yaml.load(
-            template.render(**template_functions)
-        )
+        try:
+            template = Template(open(config_file, 'r').read())
+        except IOError as e:
+            print(e)
+            exit(1)
+        else:
+            yaml.load(
+                template.render(**template_functions)
+            )

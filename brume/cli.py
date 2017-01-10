@@ -8,11 +8,21 @@ from config import Config
 from stack import Stack
 from template import Template
 
+conf = Config.load('brume.yml')
+templates_config = conf['templates']
+cf_config = conf['stack']
+
 
 def collect_templates():
     """Convert every .cform template into a Template."""
     templates = glob(path.join(templates_config.get('local_path', ''), '*.cform'))
     return [Template(t, templates_config) for t in templates]
+
+
+def validate_and_upload():
+    templates = collect_templates()
+    map(lambda t: t.validate(), templates)
+    map(lambda t: t.upload(), templates)
 
 
 @click.command()
@@ -25,6 +35,7 @@ def config():
 def create():
     """Create a new CloudFormation stack."""
     stack = Stack(cf_config)
+    validate_and_upload()
     stack.create()
 
 
@@ -32,6 +43,7 @@ def create():
 def update():
     """Update an existing CloudFormation stack."""
     stack = Stack(cf_config)
+    validate_and_upload()
     stack.update()
 
 
@@ -39,6 +51,7 @@ def update():
 def deploy():
     """Create or update a CloudFormation stack."""
     stack = Stack(cf_config)
+    validate_and_upload()
     stack.create_or_update()
 
 
@@ -60,7 +73,7 @@ def validate():
 def upload():
     """Upload CloudFormation templates to S3."""
     templates = collect_templates()
-    [t.upload() for t in templates]
+    return map(lambda t: t.upload(), templates)
 
 
 @click.group()
@@ -76,7 +89,4 @@ cli.add_command(validate)
 cli.add_command(config)
 
 if __name__ == '__main__':
-    conf = Config.load('brume.yml')
-    templates_config = conf['templates']
-    cf_config = conf['stack']
     cli()
