@@ -5,14 +5,10 @@ from setuptools import find_packages, setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
-
 setup(
     name='brume',
     version='0.0.1',
     description='AWS Cloudformation deployer',
-    long_description=read('README.md'),
     url='',
     author='ekino',
     author_email='ferrand@ekino.com',
@@ -20,7 +16,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=required,
+    install_requires=[
+        'boto3>=1.4.1',
+        'ansicolors>=1.0.2',
+        'click>=6.6',
+        'PyYAML>=3.12',
+        'Jinja2>=2.8',
+    ],
     entry_points={
         'console_scripts': [
             'brume = brume.cli:cli'
