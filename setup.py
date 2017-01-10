@@ -7,10 +7,10 @@ def read(fname):
 
 setup(
     name='brume',
-    version='0.0.5',
+    version='0.0.6',
     description='AWS Cloudformation deployer',
     url='',
-    author='ekino',
+    author='Lou Ferrand',
     author_email='ferrand@ekino.com',
     license='MIT',
     packages=find_packages(),
