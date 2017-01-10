@@ -3,7 +3,7 @@
 brume is a Python package and it can be installed with Pip.
 
 ```sh
-$ pip install brumecli
+$ pip install brume
 ```
 
 ## Usage
