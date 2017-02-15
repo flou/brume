@@ -17,8 +17,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'boto3>=1.4.1',
-        'ansicolors>=1.0.2',
+        'boto3==1.4.3',
+        'crayons>=0.1.2',
         'click>=6.6',
         'PyYAML>=3.12',
         'Jinja2>=2.8',

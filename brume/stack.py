@@ -1,7 +1,7 @@
 import time
 import os
 import boto3
-from colors import red
+from color import Color, red
 from botocore.exceptions import ClientError
 
 client = boto3.client('cloudformation')
@@ -41,6 +41,27 @@ class Stack():
             Capabilities=self.capabilities,
             Tags=self.tags)
 
+    def get_stacks(self):
+        stacks = [self.stack_name]
+        substacks = client.describe_stack_resources(StackName=self.stack_name)['StackResources']
+        stacks.extend([s['PhysicalResourceId'] for s in substacks])
+        return stacks
+
+    def outputs(self):
+        outputs = {}
+        try:
+            for stack in self.get_stacks():
+                s_outputs = client.describe_stacks(StackName=stack)['Stacks'][0].get('Outputs', [])
+                for o in s_outputs:
+                    outputs[o['OutputKey']] = o['OutputValue']
+            return outputs
+        except ClientError as e:
+            if 'does not exist' in e.message:
+                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
+            else:
+                raise e
+
     @staticmethod
     def exists(stack_name):
         try:
@@ -55,13 +76,13 @@ class Stack():
             return True
 
     def create(self):
-        print('Deploying stack {}'.format(self.stack_name))
+        print('Creating stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
             self.tail()
         except ClientError as e:
             if 'AlreadyExistsException' in e.message:
-                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                print(red('Stack [{}] already exists'.format(self.stack_name)))
                 exit(1)
 
     def update(self):
@@ -78,7 +99,7 @@ class Stack():
                 exit(1)
 
     def create_or_update(self):
-        print('Applying stack {}'.format(self.stack_name))
+        print('Deploying stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
             self.tail()
@@ -105,7 +126,10 @@ class Stack():
     def status(self):
         try:
             stacks = client.describe_stacks(StackName=self.stack_name)
-            print(next(s['StackStatus'] for s in stacks['Stacks']))
+            print(Color.for_status(next(s['StackStatus'] for s in stacks['Stacks'])))
+        except KeyError as e:
+            print(e)
+            exit(1)
         except ClientError as e:
             if 'does not exist' in e.message:
                 print(red('Stack [{}] does not exist'.format(self.stack_name)))
@@ -163,7 +187,7 @@ class Stack():
     def _log_event(self, e):
         print('{:23s} {:36s} {:30s} {:30s} {}'.format(
             e['Timestamp'].strftime('%Y-%m-%d %H:%M:%S UTC'),
-            e['ResourceStatus'],
+            Color.for_status(e['ResourceStatus']),
             e['LogicalResourceId'],
             e['ResourceType'],
             e.get('ResourceStatusReason', ''),

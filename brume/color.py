@@ -1,51 +1,43 @@
-from colors import color
+import crayons
 
 
 class Color():
 
     @staticmethod
     def for_status(status):
-        colors = {
-            'red': 1,
-            'green': 2,
-            'yellow': 3,
-            'grey': 8,
-        }
-
         colors_map = {
             # ERRORS
             # 1 == red
-            'CREATE_FAILED': colors['red'],
-            'DELETE_FAILED': colors['red'],
-            'UPDATE_FAILED': colors['red'],
-            'ROLLBACK_IN_PROGRESS': colors['red'],
-            'ROLLBACK_FAILED': colors['red'],
-            'UPDATE_ROLLBACK_FAILED': colors['red'],
+            'CREATE_FAILED': crayons.red,
+            'DELETE_FAILED': crayons.red,
+            'UPDATE_FAILED': crayons.red,
+            'ROLLBACK_IN_PROGRESS': crayons.red,
+            'ROLLBACK_FAILED': crayons.red,
+            'UPDATE_ROLLBACK_FAILED': crayons.red,
 
             # COMPLETE
             # 2 == green
-            'ROLLBACK_COMPLETE': colors['green'],
-            'CREATE_COMPLETE': colors['green'],
-            'DELETE_COMPLETE': colors['green'],
-            'UPDATE_COMPLETE': colors['green'],
-            'UPDATE_ROLLBACK_COMPLETE': colors['green'],
+            'ROLLBACK_COMPLETE': crayons.green,
+            'CREATE_COMPLETE': crayons.green,
+            'DELETE_COMPLETE': crayons.green,
+            'UPDATE_COMPLETE': crayons.green,
+            'UPDATE_ROLLBACK_COMPLETE': crayons.green,
 
             # SUCCESS
             # 3 == yellow
-            'CREATE_IN_PROGRESS': colors['yellow'],
-            'DELETE_IN_PROGRESS': colors['yellow'],
-            'UPDATE_IN_PROGRESS': colors['yellow'],
-            'UPDATE_ROLLBACK_IN_PROGRESS': colors['yellow'],
-            'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': colors['yellow'],
-            'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': colors['yellow'],
+            'CREATE_IN_PROGRESS': crayons.yellow,
+            'DELETE_IN_PROGRESS': crayons.yellow,
+            'UPDATE_IN_PROGRESS': crayons.yellow,
+            'UPDATE_ROLLBACK_IN_PROGRESS': crayons.yellow,
+            'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS': crayons.yellow,
+            'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS': crayons.yellow,
 
             # SKIPPED
             # 8 == grey
-            'DELETE_SKIPPED': colors['grey'],
+            'DELETE_SKIPPED': crayons.cyan,
         }
-        return color(status, fg=colors_map[status])
+        return '{}'.format(colors_map[status](status))
 
 
-if __name__ == '__main__':
-    for i in range(15):
-        print color('Color #%d' % i, fg=i)
+def red(string):
+    return '{}'.format(crayons.red(string))
