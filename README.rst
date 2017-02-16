@@ -2,7 +2,7 @@
 Installation
 ------------
 
-brume is a Python package and it can be installed with Pip.
+brume is a Python package and it can be installed with Pip::
 
     $ pip install brume
 
@@ -25,14 +25,16 @@ These commands always use the current AWS credentials and the stack name from th
 * ``upload``: Upload CloudFormation templates to S3.
 * ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
 
---------------------
-The `brume.yml` file
---------------------
+----------------------
+The ``brume.yml`` file
+----------------------
 
 The configuration file requires two configuration blocks ``stack`` and ``templates``.
 
 Stack
------
+~~~~~
+
+::
 
     stack:
       stack_name: my-wordpress-website   # [REQUIRED] the name of the CloudFormation stack
@@ -42,11 +44,13 @@ Stack
 The template referenced in ``stack.template_body`` or ``stack.template_url`` is the entrypoint to your CloudFormation stack (the main or parent stack).
 
 Templates
----------
+~~~~~~~~~
 
 In case your stack is split between multiple templates, you need to upload the CloudFormation templates to S3 (e.g. using ``brume upload`` or the tool of your choice).
 
 If you use ``brume upload``, you need to tell brume where the templates are and where to put them. This is done via the ``templates`` section.
+
+::
 
     templates:
       s3_bucket: my-bucket            # [REQUIRED] name of the bucket in your account in which to store the templates
@@ -56,7 +60,9 @@ If you use ``brume upload``, you need to tell brume where the templates are and 
 Given the above configuration and if you have a ``Main.cform`` in ``project/cfn``, the template would be uploaded to ``https://my-bucket.s3.amazonaws.com/assets/cloudformation/Main.cform``.
 
 Minimal example
----------------
+~~~~~~~~~~~~~~~
+
+::
 
     region: eu-west-1
 
@@ -68,12 +74,14 @@ Minimal example
       s3_bucket: my-bucket
 
 Complete example
-----------------
+~~~~~~~~~~~~~~~~
 
 ``brume.yml`` is in fact a Jinja2 template which means you can declare variables and reuse them in the template. You can also inject environment variables by calling ``{{ env('MY_VAR') }}``.
 
 Also, if the current directory is a git repository (if it contains a ``.git/`` directory), ``brume`` offers two pre-defined variables: ``git_commit`` and ``git_branch``.
 Their values are taken directly from the current repository.
+
+::
 
     region: {{ env('AWS_REGION') }}
 
