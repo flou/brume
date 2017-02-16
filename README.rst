@@ -1,12 +1,10 @@
-------------
 Installation
-------------
+============
 
 brume is a Python package and it can be installed with Pip::
 
     $ pip install brume
 
------
 Usage
 -----
 
@@ -25,7 +23,6 @@ These commands always use the current AWS credentials and the stack name from th
 * ``upload``: Upload CloudFormation templates to S3.
 * ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
 
-----------------------
 The ``brume.yml`` file
 ----------------------
 
@@ -109,4 +106,3 @@ Their values are taken directly from the current repository.
       s3_bucket: my_bucket
       s3_path: {{ stack_name }}
       local_path: cloudformation
-
