@@ -1,6 +1,8 @@
 import time
 import os
 import boto3
+import click
+
 from color import Color, red
 from botocore.exceptions import ClientError
 
@@ -62,60 +64,74 @@ class Stack():
             else:
                 raise e
 
+    def params(self):
+        parameters = {}
+        try:
+            for stack in self.get_stacks():
+                parameters[stack] = {}
+                s_params = client.describe_stacks(StackName=stack)['Stacks'][0].get('Parameters', [])
+                for o in s_params:
+                    parameters[stack][o['ParameterKey']] = o['ParameterValue']
+            return parameters
+        except ClientError as e:
+            if 'does not exist' in e.message:
+                click.echo(red('Stack [{}] does not exist'.format(self.stack_name)))
+                exit(1)
+            else:
+                raise e
+
     @staticmethod
     def exists(stack_name):
         try:
             client.describe_stacks(StackName=stack_name)
         except ClientError as e:
-            # print(e)
             if 'AlreadyExistsException' in e.message:
-                print(red('Stack [{}] does not exist'.format(stack_name)))
+                click.secho('Stack [{}] does not exist'.format(stack_name), err=True, fg='red')
                 exit(1)
-            # return False
         else:
             return True
 
     def create(self):
-        print('Creating stack {}'.format(self.stack_name))
+        click.echo('Creating stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
             self.tail()
         except ClientError as e:
             if 'AlreadyExistsException' in e.message:
-                print(red('Stack [{}] already exists'.format(self.stack_name)))
+                click.secho('Stack [{}] already exists'.format(self.stack_name), err=True, fg='red')
                 exit(1)
 
     def update(self):
-        print('Updating stack {}'.format(self.stack_name))
+        click.echo('Updating stack {}'.format(self.stack_name))
         try:
             client.update_stack(**self.stack_configuration)
             self.tail()
         except ClientError as e:
             if 'does not exist' in e.message:
-                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                click.secho('Stack [{}] does not exist'.format(self.stack_name), err=True, fg='red')
                 exit(1)
             if 'No updates are to be performed.' in e.message:
-                print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
+                click.secho('No updates are to be performed on stack [{}]'.format(self.stack_name), err=True, fg='red')
                 exit(1)
 
     def create_or_update(self):
-        print('Deploying stack {}'.format(self.stack_name))
+        click.echo('Deploying stack {}'.format(self.stack_name))
         try:
             client.create_stack(**self.stack_configuration)
             self.tail()
         except ClientError as e:
             if 'does not exist' in e.message:
-                print(red('Stack [{}] does not exist'.format(self.stack_name)))
+                click.secho('Stack [{}] does not exist'.format(self.stack_name), err=True, fg='red')
                 exit(1)
             if 'No updates are to be performed.' in e.message:
-                print(red('No updates are to be performed on stack [{}]'.format(self.stack_name)))
+                click.secho('No updates are to be performed on stack [{}]'.format(self.stack_name), err=True, fg='red')
                 exit(1)
-            print(e.message)
-            print('Stack {} already exists'.format(self.stack_name))
+            click.secho(e.message, err=True, fg='red')
+            click.secho('Stack {} already exists'.format(self.stack_name), err=True, fg='red')
             self.update()
 
     def delete(self):
-        print('Deleting stack {}'.format(self.stack_name))
+        click.echo('Deleting stack {}'.format(self.stack_name))
         try:
             client.delete_stack(StackName=self.stack_name)
             self.tail()

@@ -69,6 +69,28 @@ def status():
 
 
 @click.command()
+def outputs():
+    """Get the full list of outputs of a CloudFormation stack."""
+    outputs = Stack(cf_config).outputs()
+    for o in outputs:
+        click.echo('{} = {}'.format(o, outputs[o]))
+
+
+@click.command()
+def parameters():
+    """Get the full list of parameters of a CloudFormation stack."""
+    parameters = Stack(cf_config).params()
+    for stack_parameters in parameters:
+        sp = parameters[stack_parameters]
+        if not sp:
+            continue
+        click.echo(stack_parameters)
+        for p in sp:
+            click.echo('\t{} = {}'.format(p, sp[p]))
+        click.echo()
+
+
+@click.command()
 def validate():
     """Validate CloudFormation templates."""
     templates = collect_templates()
@@ -86,6 +108,7 @@ def upload():
 def cli():
     pass
 
+
 cli.add_command(create)
 cli.add_command(update)
 cli.add_command(deploy)
@@ -94,6 +117,8 @@ cli.add_command(delete)
 cli.add_command(validate)
 cli.add_command(config)
 cli.add_command(status)
+cli.add_command(outputs)
+cli.add_command(parameters)
 
 if __name__ == '__main__':
     cli()
