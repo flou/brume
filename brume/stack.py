@@ -3,7 +3,7 @@ import os
 import boto3
 import click
 
-from color import Color, red
+from color import Color
 from botocore.exceptions import ClientError
 
 client = boto3.client('cloudformation')
@@ -59,7 +59,7 @@ class Stack():
             return outputs
         except ClientError as e:
             if 'does not exist' in e.message:
-                click.echo(red('Stack [{}] does not exist'.format(self.stack_name)))
+                click.secho('Stack [{}] does not exist'.format(self.stack_name), err=True, fg='red')
                 exit(1)
             else:
                 raise e
@@ -75,7 +75,7 @@ class Stack():
             return parameters
         except ClientError as e:
             if 'does not exist' in e.message:
-                click.echo(red('Stack [{}] does not exist'.format(self.stack_name)))
+                click.secho('Stack [{}] does not exist'.format(self.stack_name), err=True, fg='red')
                 exit(1)
             else:
                 raise e
