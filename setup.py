@@ -5,11 +5,13 @@ from setuptools import find_packages, setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 setup(
     name='brume',
     version='0.0.6',
     description='AWS Cloudformation deployer',
-    url='',
+    long_description=read('README.rst'),
+    url='https://github.com/flou/brume',
     author='Lou Ferrand',
     author_email='ferrand@ekino.com',
     license='MIT',
@@ -17,7 +19,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'boto3==1.4.3',
+        'boto3==1.4.4',
         'crayons>=0.1.2',
         'click>=6.6',
         'PyYAML>=3.12',

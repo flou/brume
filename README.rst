@@ -1,5 +1,22 @@
+Brume: an AWS CloudFormation deployer
+=====================================
+
+.. image:: https://img.shields.io/pypi/v/brume.svg
+    :target: https://pypi.python.org/pypi/brume
+
+.. image:: https://img.shields.io/pypi/l/brume.svg
+    :target: https://pypi.python.org/pypi/brume
+
+.. image:: https://img.shields.io/pypi/wheel/brume.svg
+    :target: https://pypi.python.org/pypi/brume
+
+.. image:: https://img.shields.io/pypi/pyversions/brume.svg
+    :target: https://pypi.python.org/pypi/brume
+
+-------------------------------------
+
 Installation
-============
+------------
 
 brume is a Python package and it can be installed with Pip::
 
