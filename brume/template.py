@@ -1,12 +1,13 @@
 import os
 import boto3
 import sys
-from colors import green, red
+import click
 from botocore.exceptions import ClientError
 
 s3_client = boto3.client('s3')
 
 CFN_TEMPLATE_SIZE_LIMIT = 51200
+
 
 class InvalidTemplateError(BaseException):
 
@@ -40,7 +41,7 @@ class Template():
         try:
             return open(self.file, 'r').read()
         except IOError as e:
-            print(red('File {!r} does not exist'.format(self.file)))
+            click.secho('File {!r} does not exist'.format(self.file), err=True, fg='red')
             raise e
 
     def validate(self):
@@ -53,11 +54,11 @@ class Template():
         try:
             cfn_client.validate_template(**params)
         except ClientError as e:
-            print(red('invalid'))
+            click.secho('invalid', err=True, fg='red')
             print(e)
             exit(1)
         else:
-            print(green('valid'))
+            click.secho('valid', fg='green')
         return self
 
     def upload(self):
