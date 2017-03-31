@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 
 s3_client = boto3.client('s3')
 
+CFN_TEMPLATE_SIZE_LIMIT = 51200
 
 class InvalidTemplateError(BaseException):
 
@@ -45,8 +46,12 @@ class Template():
     def validate(self):
         sys.stdout.write('Validating {} ... '.format(self.file))
         cfn_client = boto3.client('cloudformation')
+        if os.path.getsize(self.file) > CFN_TEMPLATE_SIZE_LIMIT:
+            params = {'TemplateURL': self.public_url}
+        else:
+            params = {'TemplateBody': self.content()}
         try:
-            cfn_client.validate_template(TemplateBody=self.content())
+            cfn_client.validate_template(**params)
         except ClientError as e:
             print(red('invalid'))
             print(e)
