@@ -41,3 +41,7 @@ class Color():
 
 def red(string):
     return '{}'.format(crayons.red(string))
+
+
+def green(string):
+    return '{}'.format(crayons.green(string))

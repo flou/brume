@@ -2,7 +2,7 @@ import os
 import yaml
 
 from subprocess import check_output, CalledProcessError
-from colors import red
+from color import red
 from jinja2 import Template
 
 

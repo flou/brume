@@ -1,7 +1,7 @@
 import os
 import boto3
 import sys
-from colors import green, red
+from color import green, red
 from botocore.exceptions import ClientError
 
 s3_client = boto3.client('s3')
