@@ -1,8 +1,8 @@
 import os
 import yaml
+import click
 
 from subprocess import check_output, CalledProcessError
-from color import red
 from jinja2 import Template
 
 
@@ -14,7 +14,7 @@ class Config():
         try:
             return os.environ[key]
         except KeyError:
-            print(red('[ERROR] No environment variable with key {}'.format(key)))
+            click.secho('[ERROR] No environment variable with key {}'.format(key), err=True, fg='red')
             exit(1)
 
     @staticmethod
@@ -23,7 +23,7 @@ class Config():
         try:
             return check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
         except CalledProcessError:
-            print(red('[ERROR] Current directory is not a Git repository'))
+            click.secho('[ERROR] Current directory is not a Git repository', err=True, fg='red')
             exit(1)
 
     @staticmethod
@@ -32,7 +32,7 @@ class Config():
         try:
             return check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
         except CalledProcessError:
-            print(red('[ERROR] Current directory is not a Git repository'))
+            click.secho('[ERROR] Current directory is not a Git repository', err=True, fg='red')
             exit(1)
 
     @staticmethod
