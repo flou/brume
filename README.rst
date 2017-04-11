@@ -39,6 +39,8 @@ These commands always use the current AWS credentials and the stack name from th
 * ``update``: Update the existing CloudFormation stack.
 * ``upload``: Upload CloudFormation templates to S3.
 * ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
+* ``outputs``: Get the full list of outputs
+* ``parameters``: Get the full list of parameters
 
 The ``brume.yml`` file
 ----------------------
