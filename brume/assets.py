@@ -5,7 +5,7 @@ import click
 
 s3_client = boto3.client('s3')
 
-def sendAssets(local_path, s3_bucket , s3_path= ''):
+def send_assets(local_path, s3_bucket , s3_path= ''):
     """
     Send directory '{local_path}' under 's3://{s3_bucket}/{s3_path}'
     """
