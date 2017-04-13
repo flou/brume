@@ -82,10 +82,11 @@ If 'assets' configuration is present you can send additionnal resource to target
 
 In your template, you can build assets url like this:
 
-```
-def getAssetUri(asset, bucketName, stackName):
-    return '/'.join(['s3://{}'.format(bucketName), stackName, 'assets', asset])
-```
+::
+
+    def getAssetUri(asset, bucketName, stackName):
+      return '/'.join(['s3://{}'.format(bucketName), stackName, 'assets', asset])
+
 
 
 Minimal example
