@@ -7,11 +7,20 @@ from yaml import dump
 from config import Config
 from stack import Stack
 from template import Template
-
+from assets import send_assets
 conf = Config.load('brume.yml')
 templates_config = conf['templates']
 cf_config = conf['stack']
 
+
+def process_assets():
+    if ('assets' in conf):
+        assetsConfig = conf['assets']
+        local_path = assetsConfig['local_path']
+        s3_bucket = assetsConfig['s3_bucket']
+        s3_path = assetsConfig['s3_path']
+        click.echo("Processing assets from {} to s3://{}/{}".format(local_path, s3_bucket, s3_path))
+        send_assets(local_path, s3_bucket , s3_path)
 
 def collect_templates():
     """Convert every .cform template into a Template."""
@@ -23,6 +32,7 @@ def validate_and_upload():
     templates = collect_templates()
     map(lambda t: t.validate(), templates)
     map(lambda t: t.upload(), templates)
+    process_assets()
 
 
 @click.command()
@@ -99,7 +109,8 @@ def validate():
 
 @click.command()
 def upload():
-    """Upload CloudFormation templates to S3."""
+    """Upload CloudFormation templates and assets to S3."""
+    process_assets()
     templates = collect_templates()
     return map(lambda t: t.upload(), templates)
 

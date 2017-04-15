@@ -39,6 +39,8 @@ These commands always use the current AWS credentials and the stack name from th
 * ``update``: Update the existing CloudFormation stack.
 * ``upload``: Upload CloudFormation templates to S3.
 * ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
+* ``outputs``: Get the full list of outputs
+* ``parameters``: Get the full list of parameters
 
 The ``brume.yml`` file
 ----------------------
@@ -72,6 +74,20 @@ If you use ``brume upload``, you need to tell brume where the templates are and 
       local_path: project/cfn         # local path where your CloudFormation templates are, defaults to `.`
 
 Given the above configuration and if you have a ``Main.cform`` in ``project/cfn``, the template would be uploaded to ``https://my-bucket.s3.amazonaws.com/assets/cloudformation/Main.cform``.
+
+Assets
+~~~~~~
+
+If 'assets' configuration is present you can send additionnal resource to target s3 URI (like user data script, application config file, ...).
+
+In your template, you can build assets url like this:
+
+::
+
+    def getAssetUri(asset, bucketName, stackName):
+      return '/'.join(['s3://{}'.format(bucketName), stackName, 'assets', asset])
+
+
 
 Minimal example
 ~~~~~~~~~~~~~~~
@@ -123,3 +139,8 @@ Their values are taken directly from the current repository.
       s3_bucket: my_bucket
       s3_path: {{ stack_name }}
       local_path: cloudformation
+
+    assets:
+      s3_bucket: my_bucket
+      s3_path: {{ stack_name }}/assets
+      local_path: assets
