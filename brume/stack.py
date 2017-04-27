@@ -20,6 +20,19 @@ def make_tags(tags_list):
 def make_parameters(tags_list):
     return [{"ParameterKey": k, "ParameterValue": v} for k, v in tags_list.items()]
 
+def outputs_for(outputs, stack):
+    try:
+        s_outputs = client.describe_stacks(StackName=stack)['Stacks'][0].get('Outputs', [])
+        for o in s_outputs:
+            outputs[o['OutputKey']] = o['OutputValue']
+        return outputs
+    except ClientError as e:
+        if 'does not exist' in e.message:
+            click.secho('Stack [{}] does not exist'.format(stack), err=True, fg='red')
+            exit(1)
+        else:
+            raise e
+
 
 class Stack():
     stack_name = None
@@ -51,18 +64,12 @@ class Stack():
 
     def outputs(self):
         outputs = {}
-        try:
-            for stack in self.get_stacks():
-                s_outputs = client.describe_stacks(StackName=stack)['Stacks'][0].get('Outputs', [])
-                for o in s_outputs:
-                    outputs[o['OutputKey']] = o['OutputValue']
-            return outputs
-        except ClientError as e:
-            if 'does not exist' in e.message:
-                click.secho('Stack [{}] does not exist'.format(self.stack_name), err=True, fg='red')
-                exit(1)
-            else:
-                raise e
+        outputs_for(outputs, self.stack_name)
+        substacks = client.describe_stack_resources(StackName=self.stack_name)['StackResources']
+        for s in substacks:
+            outputs[s['LogicalResourceId']] = {}
+            outputs_for(outputs[s['LogicalResourceId']], s['PhysicalResourceId'])
+        return outputs
 
     def params(self):
         parameters = {}

@@ -82,8 +82,7 @@ def status():
 def outputs():
     """Get the full list of outputs of a CloudFormation stack."""
     outputs = Stack(cf_config).outputs()
-    for o in outputs:
-        click.echo('{} = {}'.format(o, outputs[o]))
+    print dump(outputs, default_flow_style=False)
 
 
 @click.command()
