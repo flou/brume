@@ -1,12 +1,15 @@
 import time
 import os
+from datetime import datetime, timedelta
 import boto3
 import click
+import pytz
+from brume.color import Color
 
-from color import Color
 from botocore.exceptions import ClientError
 
 client = boto3.client('cloudformation')
+TZ = pytz.timezone('UTC')
 
 
 def env(key):
@@ -19,6 +22,7 @@ def make_tags(tags_list):
 
 def make_parameters(tags_list):
     return [{"ParameterKey": k, "ParameterValue": v} for k, v in tags_list.items()]
+
 
 def outputs_for(outputs, stack):
     try:
@@ -48,6 +52,9 @@ class Stack():
         self.parameters = make_parameters(conf.get('parameters', self.parameters))
         self.tags = make_tags(conf['tags'])
         self.on_failure = conf.get('on_failure', self.on_failure)
+
+        # Check the events 2 minutes before if the stack update starts way too soon
+        self.update_started_at = datetime.now(TZ) - timedelta(minutes=2)
 
         self.stack_configuration = dict(
             StackName=self.stack_name,
@@ -159,42 +166,31 @@ class Stack():
                 exit(1)
 
     def get_events(self):
-        Stack.exists(self.stack_name)
-        event_list = []
-        params = dict(StackName=self.stack_name)
-        while True:
-            events = client.describe_stack_events(**params)
-            event_list.append(events)
-            if 'NextToken' not in events:
-                break
-            else:
-                params['NextToken'] = events['NextToken']
-                time.sleep(1)
-        return reversed(event_list[0]['StackEvents'])
+        events = client.describe_stack_events(StackName=self.stack_name)
+        return reversed(events['StackEvents'])
 
-    def tail(self, sleep_time=5):
-        click.echo('Polling for events...')
+    def tail(self, sleep_time=3):
         error = False
         seen = set()
-        initial_events = self.get_events()
+        click.echo('Polling for events...')
         self.print_log_headers()
-        for e in initial_events:
-            self._log_event(e)
-            seen.add(e['EventId'])
-
+        events = self.get_events()
         while True:
-            events = self.get_events()
             for e in events:
-                if e['EventId'] not in seen:
-                    self._log_event(e)
+                if e['Timestamp'] < self.update_started_at:
                     seen.add(e['EventId'])
-                    if 'FAILED' in e['ResourceStatus']:
-                        error = True
+                if e['EventId'] in seen:
+                    continue
+                if 'FAILED' in e['ResourceStatus']:
+                    error = True
+                self._log_event(e)
+                seen.add(e['EventId'])
             if self.stack_complete(e):
                 if error:
                     exit(1)
                 break
             time.sleep(sleep_time)
+            events = self.get_events()
 
     def stack_complete(self, e):
         if e['LogicalResourceId'] == self.stack_name and e['ResourceStatus'].endswith('COMPLETE'):

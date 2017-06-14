@@ -24,6 +24,7 @@ setup(
         'click>=6.6',
         'PyYAML>=3.12',
         'Jinja2>=2.8',
+        'pytz>=2017.2',
     ],
     entry_points={
         'console_scripts': [
