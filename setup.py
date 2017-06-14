@@ -20,11 +20,11 @@ setup(
     zip_safe=False,
     install_requires=[
         'boto3==1.4.4',
-        'crayons>=0.1.2',
-        'click>=6.6',
-        'PyYAML>=3.12',
-        'Jinja2>=2.8',
-        'pytz>=2017.2',
+        'crayons==0.1.2',
+        'click==6.6',
+        'PyYAML==3.12',
+        'Jinja2==2.9.6',
+        'pytz==2017.2',
     ],
     entry_points={
         'console_scripts': [
