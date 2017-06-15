@@ -1,0 +1,9 @@
+---
+region: eu-west-1
+
+stack:
+  stack_name: my-wordpress-website
+  template_body: Main.cform
+
+templates:
+  s3_bucket: my-bucket
