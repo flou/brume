@@ -1,13 +1,14 @@
-import click
-
 from glob import glob
 from os import path
 from yaml import dump
 
-from config import Config
-from stack import Stack
-from template import Template
-from assets import send_assets
+import click
+from .config import Config
+from .stack import Stack
+from .template import Template
+from .assets import send_assets
+from .checker import check_templates
+
 conf = Config.load('brume.yml')
 templates_config = conf['templates']
 cf_config = conf['stack']
@@ -114,6 +115,15 @@ def upload():
     return map(lambda t: t.upload(), templates)
 
 
+@click.command()
+def check():
+    """
+    Check CloudFormation templates.
+    """
+    check_templates(cf_config['template_body'])
+    return
+
+
 @click.group()
 def cli():
     pass
@@ -128,6 +138,7 @@ cli.add_command(validate)
 cli.add_command(config)
 cli.add_command(status)
 cli.add_command(outputs)
+cli.add_command(check)
 cli.add_command(parameters)
 
 if __name__ == '__main__':
