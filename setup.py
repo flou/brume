@@ -19,9 +19,9 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'boto3==1.4.4',
+        'boto3>=1.4.5',
         'crayons==0.1.2',
-        'click==6.6',
+        'click>=6.7',
         'PyYAML==3.12',
         'Jinja2==2.9.6',
         'pytz==2017.2',
