@@ -1,13 +1,14 @@
-import click
-
 from glob import glob
 from os import path
 from yaml import dump
 
-from config import Config
-from stack import Stack
-from template import Template
-from assets import send_assets
+import click
+from .config import Config
+from .stack import Stack
+from .template import Template
+from .assets import send_assets
+from .checker import check_templates
+
 conf = Config.load('brume.yml')
 templates_config = conf['templates']
 cf_config = conf['stack']
