@@ -30,17 +30,30 @@ The current directory must contain a ``brume.yml`` configuration file.
 Available commands
 ------------------
 
+::
+    Usage: brume [OPTIONS] COMMAND [ARGS]...
+
+    Options:
+      --version  Show the version and exit.
+      --help     Show this message and exit.
+
+    Commands:
+      check       Check CloudFormation templates.
+      config      Print the current stack confguration.
+      create      Create a new CloudFormation stack.
+      delete      Delete a CloudFormation stack.
+      deploy      Create or update a CloudFormation stack.
+      help        Show this message and exit.
+      outputs     Get the full list of outputs of a CloudFormation stack.
+      parameters  Get the full list of parameters of a CloudFormation stack.
+      status      Get the status of a CloudFormation stack.
+      update      Update an existing CloudFormation stack.
+      upload      Upload CloudFormation templates and assets to S3.
+      validate    Validate CloudFormation templates.
+      version     Show this message and exit.
+
 These commands always use the current AWS credentials and the stack name from the `brume.yml` file.
 
-* ``config``: Print the current stack configuration based on the `brume.yml` file, with the variables interpolated.
-* ``create``: Create the CloudFormation stack.
-* ``delete``: Delete the CloudFormation stack.
-* ``deploy``: Create or update the CloudFormation stack, if you only care about applying your changes and don't want to know if the stack already exists or not (can be useful for automated deployments)
-* ``update``: Update the existing CloudFormation stack.
-* ``upload``: Upload CloudFormation templates to S3.
-* ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
-* ``outputs``: Get the full list of outputs
-* ``parameters``: Get the full list of parameters
 
 The ``brume.yml`` file
 ----------------------
@@ -78,7 +91,8 @@ Given the above configuration and if you have a ``Main.cform`` in ``project/cfn`
 Assets
 ~~~~~~
 
-If 'assets' configuration is present you can send additionnal resource to target s3 URI (like user data script, application config file, ...).
+If 'assets' configuration is present you can send additionnal resources to
+target s3 URI (like user data script, application config file, ...).
 
 In your template, you can build assets url like this:
 

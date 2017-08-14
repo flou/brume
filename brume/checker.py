@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.INFO)
 CFN_REF = 'Ref'
 CFN_GETATT = 'Fn::GetAtt'
 
+
 class Stack(object):
     """docstring for Stack."""
 
@@ -29,7 +30,6 @@ class Stack(object):
 
         # Parameters defined in the Parameters section of the template
         self.parameters = {}
-
 
     def find(self, key):
         """
@@ -97,8 +97,8 @@ class Stack(object):
         try:
             template = open(stack_name, 'r')
         except IOError as err:
-            LOGGER.error('Template for stack %s not found', stack_name)
-            LOGGER.fatal(err)
+            click.echo('Template for stack {0} not found'.format(stack_name), err=True)
+            click.echo(err, err=True)
             sys.exit(1)
         template = json.load(template)
         self.outputs = template.get('Outputs', {})
@@ -124,7 +124,7 @@ class Stack(object):
 
     @staticmethod
     def find_nodes(node, key):
-        if isinstance(node, (unicode, str, list)):
+        if not isinstance(node, dict):
             return
         for k, v in node.items():
             if Stack.aws_pseudo_parameter(v):
@@ -162,7 +162,7 @@ def check_templates(template):
     }
     stacks[main_stack_name] = main_stack
 
-    return_code = 0
+    error = 0
     for name, substack in stacks.items():
         substack_path = os.path.join(templates_path, name) + filetype
         LOGGER.debug('Loading Stack %s file %s', name, substack_path)
@@ -176,26 +176,26 @@ def check_templates(template):
                     crayons.yellow(name),
                     crayons.red(param)
                 ), err=True)
-                return_code = 1
+                error = 1
             for param in substack.extra_parameters():
                 click.echo('Stack {0} is giving extra parameter {1} to substack: {2}'.format(
                     crayons.yellow(main_stack_name),
                     crayons.yellow(name),
                     crayons.red(param)
                 ), err=True)
-                return_code = 1
+                error = 1
 
         for ref in substack.missing_refs():
-            click.echo('Stack {0} has undefined Ref statement: {1}'.format(
-                crayons.yellow(name), crayons.red(ref)
+            click.echo('Stack {0} has undefined {1} statement: {2}'.format(
+                crayons.yellow(name), crayons.yellow('Ref'), crayons.red(ref)
             ), err=True)
-            return_code = 1
+            error = 1
 
         for getatt in substack.missing_getatt():
-            click.echo('Stack {0} has undefined GetAtt statement: {1}'.format(
-                crayons.yellow(name), crayons.red(getatt)
+            click.echo('Stack {0} has undefined {1} statement: {2}'.format(
+                crayons.yellow(name), crayons.yellow('GetAtt'), crayons.red(getatt)
             ), err=True)
-            return_code = 1
+            error = 1
 
     # Special case for the Main stack GetAtt
     for att in main_stack.find(CFN_GETATT):
@@ -208,7 +208,9 @@ def check_templates(template):
                     crayons.red(output_name),
                     crayons.yellow(stack.name)
                 ), err=True)
-                return_code = 1
+                error = 1
 
-    print
-    sys.exit(return_code)
+    if not error:
+        click.echo(crayons.green('Congratulations, your templates appear to be OK!\n'))
+    else:
+        sys.exit(error)

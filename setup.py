@@ -1,5 +1,6 @@
 import os
 from setuptools import find_packages, setup
+from brume import version
 
 
 def read(fname):
@@ -8,7 +9,7 @@ def read(fname):
 
 setup(
     name='brume',
-    version='0.0.12',
+    version=version,
     description='AWS Cloudformation deployer',
     long_description=read('README.rst'),
     url='https://github.com/flou/brume',
