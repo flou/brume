@@ -140,10 +140,12 @@ class Stack(object):
             client.create_stack(**self.stack_configuration)
             time.sleep(5)
             self.tail()
-        except ClientError as e:
-            if 'AlreadyExistsException' in e.message:
+        except ClientError as err:
+            if 'AlreadyExistsException' in err.message:
                 click.secho('Stack [{}] already exists'.format(self.stack_name), err=True, fg='red')
                 exit(1)
+            else:
+                click.secho(err.message, err=True, fg='red')
 
     def update(self):
         """
@@ -162,7 +164,7 @@ class Stack(object):
                     self.stack_name)), err=True)
                 exit(1)
             else:
-                click.echo(err.message, err=True)
+                click.secho(err.message, err=True, fg='red')
 
     def create_or_update(self):
         """
