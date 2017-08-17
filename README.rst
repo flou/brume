@@ -25,22 +25,32 @@ brume is a Python package and it can be installed with Pip::
 Usage
 -----
 
-The current directory must contain a ``brume.yml`` configuration file.
+In order to use the commands, the current directory must contain a valid configuration file.
 
-Available commands
-------------------
+::
 
-These commands always use the current AWS credentials and the stack name from the `brume.yml` file.
+    Usage: brume [OPTIONS] COMMAND [ARGS]...
 
-* ``config``: Print the current stack configuration based on the `brume.yml` file, with the variables interpolated.
-* ``create``: Create the CloudFormation stack.
-* ``delete``: Delete the CloudFormation stack.
-* ``deploy``: Create or update the CloudFormation stack, if you only care about applying your changes and don't want to know if the stack already exists or not (can be useful for automated deployments)
-* ``update``: Update the existing CloudFormation stack.
-* ``upload``: Upload CloudFormation templates to S3.
-* ``validate``: Validate the CloudFormation templates that reside in ``local_path`` (in the YAML configuration) or the current directory.
-* ``outputs``: Get the full list of outputs
-* ``parameters``: Get the full list of parameters
+    Options:
+      -v, --version          Show the version and exit.
+      -h, --help             Show this message and exit.
+      -c, --config FILENAME  Configuration file (defaults to brume.yml).
+
+    Commands:
+      check       Check CloudFormation templates.
+      config      Print the current stack confguration.
+      create      Create a new CloudFormation stack.
+      delete      Delete the CloudFormation stack.
+      deploy      Create or update a CloudFormation stack.
+      outputs     Get the full list of outputs of a CloudFormation stack.
+      parameters  Get the full list of parameters of a CloudFormation stack.
+      status      Get the status of a CloudFormation stack.
+      update      Update an existing CloudFormation stack.
+      upload      Upload CloudFormation templates and assets to S3
+      validate    Validate CloudFormation templates.
+
+These commands always use the current AWS credentials and the stack name from the configuration file (via the ``--config`` option).
+
 
 The ``brume.yml`` file
 ----------------------
@@ -78,7 +88,8 @@ Given the above configuration and if you have a ``Main.cform`` in ``project/cfn`
 Assets
 ~~~~~~
 
-If 'assets' configuration is present you can send additionnal resource to target s3 URI (like user data script, application config file, ...).
+If 'assets' configuration is present you can send additionnal resources to
+target s3 URI (like user data script, application config file, ...).
 
 In your template, you can build assets url like this:
 
@@ -108,7 +119,16 @@ Complete example
 
 ``brume.yml`` is in fact a Jinja2 template which means you can declare variables and reuse them in the template. You can also inject environment variables by calling ``{{ env('MY_VAR') }}``.
 
-Also, if the current directory is a git repository (if it contains a ``.git/`` directory), ``brume`` offers two pre-defined variables: ``git_commit`` and ``git_branch``.
+If the environment variable ``$MY_VAR`` does not exist, you can specify a fallback value by passing a second parameter ``{{ env('MY_VAR', 'FOO') }}``.
+
+Also, if the current directory is a git repository (if it contains a ``.git/`` directory), ``brume`` exposes a ``dict`` named ``git``, that has the three following properties:
+
+* ``git.commit_sha1`` : the SHA1 of the last commit
+* ``git.branch_name`` : the name of the current branch (warning: if you are in detached mode, the branch name does not exist so it will be HEAD)
+* ``git.commit_msg`` : the commit message of the last commit
+
+It also exposes two previously available variables: ``git_commit`` and ``git_branch``
+
 Their values are taken directly from the current repository.
 
 ::

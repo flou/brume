@@ -1,1 +1,10 @@
 pytest==3.0.6
+pycodestyle==2.3.1
+flake8==3.3.0
+pylint>=1.7.1
+boto3>=1.4.5
+crayons==0.1.2
+click>=6.7
+PyYAML==3.12
+Jinja2==2.9.6
+pytz==2017.2

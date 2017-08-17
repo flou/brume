@@ -1,71 +1,90 @@
+"""
+Template module.
+"""
+
 import os
+import logging
 import boto3
-import sys
 import click
+import crayons
 from botocore.exceptions import ClientError
 
-s3_client = boto3.client('s3')
-
+S3_CLIENT = boto3.client('s3')
+CFN_CLIENT = boto3.client('cloudformation')
 CFN_TEMPLATE_SIZE_LIMIT = 51200
 
-
-class InvalidTemplateError(BaseException):
-
-    def __init__(self, m):
-        self.m = m
-
-    def __str__(self):
-        return self.m
+logging.getLogger('botocore').setLevel(logging.WARNING)
 
 
-class Template():
+class Template(object):
+    """
+    CloudFormation template.
+    """
+
     key = None
 
-    def __init__(self, file, config):
-        self.file = file
+    def __init__(self, file_path, config):
+        self.local_file_path = file_path
+        self.file_path = file_path
         self.s3_bucket = config['s3_bucket']
-        self.public_url = self.public_url(config)
-
-    def public_url(self, config):
         local_path = config.get('local_path', '')
         if local_path != '.':
-            file = self.file.replace(local_path, '')
-        else:
-            file = self.file
-        s3_path = config.get('s3_path', 'cloudformation')
-        self.key = os.path.normpath('{}/{}'.format(s3_path, file)).strip('/')
-        url = os.path.normpath('{}.s3.amazonaws.com/{}'.format(self.s3_bucket, self.key))
-        return 'https://{}'.format(url)
+            self.file_path = self.file_path.replace(local_path, '')
+        self.s3_key = os.path.normpath('{0}/{1}'.format(
+            config.get('s3_path', 'cloudformation'),
+            self.file_path
+        )).strip('/')
+        self.public_url = self._public_url()
 
-    def content(self):
+    def _public_url(self):
+        s3_url = os.path.normpath('{0}.s3.amazonaws.com/{1}'.format(self.s3_bucket, self.s3_key))
+        return 'https://{0}'.format(s3_url)
+
+    def _content(self):
         try:
-            return open(self.file, 'r').read()
-        except IOError as e:
-            click.secho('File {!r} does not exist'.format(self.file), err=True, fg='red')
-            raise e
+            with open(self.local_file_path, 'r') as _file:
+                return _file.read()
+        except IOError as err:
+            click.echo(crayons.red('File {!r} does not exist').format(self.local_file_path), err=True)
+            raise err
 
     def validate(self):
-        sys.stdout.write('Validating {} ... '.format(self.file))
-        cfn_client = boto3.client('cloudformation')
-        if os.path.getsize(self.file) > CFN_TEMPLATE_SIZE_LIMIT:
-            params = {'TemplateURL': self.public_url}
-        else:
-            params = {'TemplateBody': self.content()}
+        """
+        Validate the template on CloudFormation.
+
+        If the template is larger than CFN_TEMPLATE_SIZE_LIMIT, brume uploads a
+        copy of the template with the .copy suffix and performs validation on
+        this template.
+        """
+        local_file_path = self.local_file_path
+        validation_path = local_file_path
+        params = {'TemplateBody': self._content()}
+        if os.path.getsize(self.local_file_path) > CFN_TEMPLATE_SIZE_LIMIT:
+            self.upload(copy=True)
+            local_file_path = self.local_file_path + '.copy'
+            validation_path = self.public_url + '.copy'
+            params = {'TemplateURL': validation_path}
         try:
-            cfn_client.validate_template(**params)
-        except ClientError as e:
-            click.secho('invalid', err=True, fg='red')
-            print(e)
+            click.echo('Validating {0} ...'.format(crayons.yellow(validation_path)), nl=False)
+            CFN_CLIENT.validate_template(**params)
+        except ClientError as err:
+            click.echo(crayons.red('invalid'), err=True)
+            click.echo(err.message, err=True)
             exit(1)
         else:
-            click.secho('valid', fg='green')
+            click.echo(crayons.green('valid'))
         return self
 
-    def upload(self):
-        print('Publishing {} to {}'.format(self.file, self.public_url))
-        s3_client.put_object(
-            Bucket=self.s3_bucket,
-            Body=self.content(),
-            Key=self.key
-        )
+    def upload(self, copy=False):
+        """
+        Upload the template to S3.
+        If copy is True,
+        """
+        s3_key = self.s3_key
+        public_url = self.public_url
+        if copy:
+            s3_key += '.copy'
+            public_url += '.copy'
+        click.echo('Publishing {0} to {1}'.format(crayons.yellow(self.local_file_path), public_url))
+        S3_CLIENT.put_object(Bucket=self.s3_bucket, Body=self._content(), Key=s3_key)
         return self
