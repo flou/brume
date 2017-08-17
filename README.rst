@@ -25,34 +25,31 @@ brume is a Python package and it can be installed with Pip::
 Usage
 -----
 
-The current directory must contain a ``brume.yml`` configuration file.
-
-Available commands
-------------------
+In order to use the commands, the current directory must contain a valid configuration file.
 
 ::
+
     Usage: brume [OPTIONS] COMMAND [ARGS]...
 
     Options:
-      --version  Show the version and exit.
-      --help     Show this message and exit.
+      -v, --version          Show the version and exit.
+      -h, --help             Show this message and exit.
+      -c, --config FILENAME  Configuration file (defaults to brume.yml).
 
     Commands:
       check       Check CloudFormation templates.
       config      Print the current stack confguration.
       create      Create a new CloudFormation stack.
-      delete      Delete a CloudFormation stack.
+      delete      Delete the CloudFormation stack.
       deploy      Create or update a CloudFormation stack.
-      help        Show this message and exit.
       outputs     Get the full list of outputs of a CloudFormation stack.
       parameters  Get the full list of parameters of a CloudFormation stack.
       status      Get the status of a CloudFormation stack.
       update      Update an existing CloudFormation stack.
-      upload      Upload CloudFormation templates and assets to S3.
+      upload      Upload CloudFormation templates and assets to S3
       validate    Validate CloudFormation templates.
-      version     Show this message and exit.
 
-These commands always use the current AWS credentials and the stack name from the `brume.yml` file.
+These commands always use the current AWS credentials and the stack name from the configuration file (via the ``--config`` option).
 
 
 The ``brume.yml`` file
@@ -122,7 +119,16 @@ Complete example
 
 ``brume.yml`` is in fact a Jinja2 template which means you can declare variables and reuse them in the template. You can also inject environment variables by calling ``{{ env('MY_VAR') }}``.
 
-Also, if the current directory is a git repository (if it contains a ``.git/`` directory), ``brume`` offers two pre-defined variables: ``git_commit`` and ``git_branch``.
+If the environment variable ``$MY_VAR`` does not exist, you can specify a fallback value by passing a second parameter ``{{ env('MY_VAR', 'FOO') }}``.
+
+Also, if the current directory is a git repository (if it contains a ``.git/`` directory), ``brume`` exposes a ``dict`` named ``git``, that has the three following properties:
+
+* ``git.commit_sha1`` : the SHA1 of the last commit
+* ``git.branch_name`` : the name of the current branch (warning: if you are in detached mode, the branch name does not exist so it will be HEAD)
+* ``git.commit_msg`` : the commit message of the last commit
+
+It also exposes two previously available variables: ``git_commit`` and ``git_branch``
+
 Their values are taken directly from the current repository.
 
 ::
