@@ -1,6 +1,9 @@
 Brume: an AWS CloudFormation deployer
 =====================================
 
+.. image:: https://img.shields.io/travis/flou/brume.svg
+    :target: https://travis-ci.org/flou/brume
+
 .. image:: https://img.shields.io/pypi/v/brume.svg
     :target: https://pypi.python.org/pypi/brume
 
