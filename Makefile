@@ -43,3 +43,7 @@ check_style:  ## Check Python code style
 	pycodestyle *.py brume --config .pycodestyle
 	flake8 *.py brume --config .pycodestyle
 	pylint --rcfile .pylintrc brume/*.py || true
+
+.PHONY: upload
+upload:  ## Create Python package and upload to PyPI
+	python setup.py sdist bdist_wheel upload
