@@ -22,8 +22,7 @@ class Config():
     def _git_commit_msg():
         """Return the message of the latest Git commit."""
         try:
-
-            return check_output(['git', 'log', '-1', '--pretty=%B']).strip()
+            return check_output(['git', 'log', '-1', '--pretty=%s'])
         except CalledProcessError:
             click.secho('[ERROR] Current directory is not a Git repository', err=True, fg='red')
             exit(1)
