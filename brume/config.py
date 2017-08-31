@@ -70,7 +70,7 @@ class Config():
         if os.path.isdir('.git'):
             template_functions['git_commit'] = Config._git_commit()
             template_functions['git_branch'] = Config._git_branch()
-            template_functions['git'] = Config.git_config
+            template_functions['git'] = Config.git_config()
 
         try:
             template = Template(config_file.read())
