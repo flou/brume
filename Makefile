@@ -18,7 +18,7 @@ RESET  := $(shell tput -Txterm sgr0)
 # A category can be added with @category
 HELP_HELPER = \
 		%help; \
-		while(<>) { push @{$$help{$$2 // 'options'}}, [$$1, $$3] if /^([a-zA-Z\-\%]+)\s*:.*\#\#(?:@([a-zA-Z\-\%]+))?\s(.*)$$/ }; \
+		while(<>) { push @{$$help{$$2 // 'targets'}}, [$$1, $$3] if /^([a-zA-Z\-\%]+)\s*:.*\#\#(?:@([a-zA-Z\-\%]+))?\s(.*)$$/ }; \
 		print "usage: make [target]\n\n"; \
 		for (sort keys %help) { \
 		print "${WHITE}$$_:${RESET}\n"; \
@@ -44,6 +44,14 @@ check_style:  ## Check Python code style
 	flake8 *.py brume --config .pycodestyle
 	pylint --rcfile .pylintrc brume/*.py || true
 
+.PHONY: clean
+clean:  ## Clean temporary and build files
+	rm -rf .cache build dist .eggs *.egg-info
+
 .PHONY: upload
-upload:  ## Create Python package and upload to PyPI
-	python setup.py sdist bdist_wheel upload
+publish: clean  ## Create Python package and upload to PyPI
+	@python setup.py publish
+
+.PHONY: test
+test:  ## Run tests
+	@pytest tests

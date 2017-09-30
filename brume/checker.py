@@ -1,10 +1,11 @@
 """
 cfn-check
 """
+import json
+import logging
 import os
 import sys
-import logging
-import json
+
 import click
 import crayons
 
@@ -162,7 +163,7 @@ def check_templates(template):
     }
     stacks[main_stack_name] = main_stack
 
-    error = 0
+    error = False
     for name, substack in stacks.items():
         substack_path = os.path.join(templates_path, name) + filetype
         LOGGER.debug('Loading Stack %s file %s', name, substack_path)
@@ -176,26 +177,26 @@ def check_templates(template):
                     crayons.yellow(name),
                     crayons.red(param)
                 ), err=True)
-                error = 1
+                error = True
             for param in substack.extra_parameters():
                 click.echo('Stack {0} is giving extra parameter {1} to substack: {2}'.format(
                     crayons.yellow(main_stack_name),
                     crayons.yellow(name),
                     crayons.red(param)
                 ), err=True)
-                error = 1
+                error = True
 
         for ref in substack.missing_refs():
             click.echo('Stack {0} has undefined {1} statement: {2}'.format(
                 crayons.yellow(name), crayons.yellow('Ref'), crayons.red(ref)
             ), err=True)
-            error = 1
+            error = True
 
         for getatt in substack.missing_getatt():
             click.echo('Stack {0} has undefined {1} statement: {2}'.format(
                 crayons.yellow(name), crayons.yellow('GetAtt'), crayons.red(getatt)
             ), err=True)
-            error = 1
+            error = True
 
     # Special case for the Main stack GetAtt
     for att in main_stack.find(CFN_GETATT):

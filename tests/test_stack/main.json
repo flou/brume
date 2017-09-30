@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "test-dev-1: S3",
+  "Resources": {
+    "MyBucket": {
+      "Properties": {
+        "BucketName": "my-bucket-test-dev-1"
+      },
+      "Type": "AWS::S3::Bucket"
+    }
+  }
+}

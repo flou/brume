@@ -37,11 +37,3 @@ class Color():
             'DELETE_SKIPPED': crayons.cyan,
         }
         return '{}'.format(colors_map[status](status))
-
-
-def red(string):
-    return '{}'.format(crayons.red(string))
-
-
-def green(string):
-    return '{}'.format(crayons.green(string))

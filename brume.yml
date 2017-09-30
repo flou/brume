@@ -1,32 +1,40 @@
 ---
-region: {{ env('AWS_REGION') }}
+region: 'eu-west-1'
 
-{% set stack_name = '-'.join([env('PROJECT'), env('ENVIRONMENT'), env('CLASSIFIER')]) %}
+{% set project = env('PROJECT', 'acme') %}
+{% set environment = env('ENVIRONMENT', 'dev') %}
+{% set classifier = env('CLASSIFIER', '1') %}
+
+{% set stack_name = '-'.join([project, environment, classifier]) %}
+{% set bucket_name = '-'.join(['bucket', project, environment, 'infra']) %}
+
 stack:
   stack_name: {{ stack_name }}
 
-  template_body: Main.cform
+  template_body: main.json
   capabilities: [ CAPABILITY_IAM ]
   on_failure: DELETE
 
   parameters:
-    Project: '{{ env('PROJECT') }}'
-    Environment: '{{ env('ENVIRONMENT') }}'
-    Classifier:  '{{ env('CLASSIFIER') }}'
-    GitCommit:  '{{ git_commit }}'
-    GitBranch:  '{{ git_branch }}'
+    Project:          '{{ project }}'
+    Environment:      '{{ environment }}'
+    Classifier:       '{{ classifier }}'
+    GitCommit:        '{{ git.commit_sha1 }}'
+    GitBranch:        '{{ git.branch_name }}'
+    GitCommitMessage: '{{ git.commit_msg }}'
+    User:             '{{ env('USER') }}'
 
   tags:
-    Project: '{{ env('PROJECT') }}'
-    Environment: '{{ env('ENVIRONMENT') }}'
-    Classifier:  '{{ env('CLASSIFIER') }}'
+    Project:          '{{ project }}'
+    Environment:      '{{ environment }}'
+    Classifier:       '{{ classifier }}'
 
 templates:
-  s3_bucket: my_bucket
-  s3_path: {{ stack_name }}
+  s3_bucket: {{ bucket_name }}
+  s3_path:   {{ stack_name }}
   local_path: cloudformation
 
 assets:
-  s3_bucket: my_bucket
+  s3_bucket: {{ bucket_name }}
   s3_path: {{ stack_name }}/assets
   local_path: assets

@@ -5,11 +5,15 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  # - "3.7"
+
+env:
+  - AWS_DEFAULT_REGION=us-east-1
 
 # command to install dependencies
 install:
   - pip install .
-  - pip install -r requirements.txt
+  - pip install -qr requirements.txt
 
 # command to run tests
 script: pytest

@@ -1,3 +1,5 @@
+.venv
 dist
-brume.egg-info
 build
+*.egg-info
+*.pyc
