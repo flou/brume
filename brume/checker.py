@@ -121,7 +121,7 @@ class Stack(object):
         """
         Check that ``v`` is an AWS pseudo-parameter (like AWS::Region).
         """
-        return isinstance(v, (str, unicode)) and v.startswith('AWS::')
+        return isinstance(v, str) and v.startswith('AWS::')
 
     @staticmethod
     def find_nodes(node, key):
