@@ -32,6 +32,7 @@ REQUIRED = [
     'Jinja2==2.9.6',
     'pytz==2017.2',
     'delegator.py==0.0.13',
+    'six==1.11.0'
 ]
 
 # The rest you shouldn't have to touch too much :)

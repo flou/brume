@@ -8,6 +8,7 @@ import sys
 
 import click
 import crayons
+from six import text_type, string_types
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -121,7 +122,7 @@ class Stack(object):
         """
         Check that ``v`` is an AWS pseudo-parameter (like AWS::Region).
         """
-        return isinstance(v, str) and v.startswith('AWS::')
+        return isinstance(v, string_types) and v.startswith('AWS::')
 
     @staticmethod
     def find_nodes(node, key):

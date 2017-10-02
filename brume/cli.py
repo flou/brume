@@ -18,6 +18,7 @@ from .template import Template
 
 DEFAULT_BRUME_CONFIG = 'brume.yml'
 
+
 class Context(object):
     """
     Context object to hold the configuration.
