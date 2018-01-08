@@ -41,7 +41,7 @@ In order to use the commands, the current directory must contain a valid configu
 
     Commands:
       check       Check CloudFormation templates.
-      config      Print the current stack confguration.
+      config      Print the current stack configuration.
       create      Create a new CloudFormation stack.
       delete      Delete the CloudFormation stack.
       deploy      Create or update a CloudFormation stack.
