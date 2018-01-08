@@ -53,18 +53,14 @@ def cli():
 @cli.command()
 @pass_ctx
 def config(ctx):
-    """
-    Print the current stack confguration.
-    """
+    """Print the current stack configuration."""
     click.echo(dump(ctx.config, default_flow_style=False))
 
 
 @cli.command()
 @pass_ctx
 def create(ctx):
-    """
-    Create a new CloudFormation stack.
-    """
+    """Create a new CloudFormation stack."""
     validate_and_upload(ctx.config)
     ctx.stack.create()
 
@@ -72,9 +68,7 @@ def create(ctx):
 @cli.command()
 @pass_ctx
 def update(ctx):
-    """
-    Update an existing CloudFormation stack.
-    """
+    """Update an existing CloudFormation stack."""
     validate_and_upload(ctx.config)
     ctx.stack.update()
 
@@ -82,9 +76,7 @@ def update(ctx):
 @cli.command()
 @pass_ctx
 def deploy(ctx):
-    """
-    Create or update a CloudFormation stack.
-    """
+    """Create or update a CloudFormation stack."""
     validate_and_upload(ctx.config)
     ctx.stack.create_or_update()
     ctx.stack.outputs()
@@ -93,18 +85,14 @@ def deploy(ctx):
 @cli.command()
 @pass_ctx
 def delete(ctx):
-    """
-    Delete the CloudFormation stack.
-    """
+    """Delete the CloudFormation stack."""
     ctx.stack.delete()
 
 
 @cli.command()
 @pass_ctx
 def status(ctx):
-    """
-    Get the status of a CloudFormation stack.
-    """
+    """Get the status of a CloudFormation stack."""
     ctx.stack.status()
 
 
@@ -114,9 +102,7 @@ def status(ctx):
 @click.option('output_format', '-f', '--format', type=click.Choice(['text', 'json', 'yaml']),
               default='text', help='Output format (text/json/yaml)')
 def outputs(ctx, output_format, flat=False):
-    """
-    Get the full list of outputs of a CloudFormation stack.
-    """
+    """Get the full list of outputs of a CloudFormation stack."""
     stack_outputs = ctx.stack.outputs()
     if output_format == 'text':
         if flat:
@@ -145,9 +131,7 @@ def outputs(ctx, output_format, flat=False):
 @click.option('output_format', '-f', '--format', type=click.Choice(['text', 'json', 'yaml']),
               default='text', help='Output format (text/json/yaml)')
 def parameters(ctx, output_format, flat=False):
-    """
-    Get the full list of parameters of a CloudFormation stack.
-    """
+    """Get the full list of parameters of a CloudFormation stack."""
     stack_params = ctx.stack.params()
     if output_format == 'text':
         if flat:
@@ -173,9 +157,7 @@ def parameters(ctx, output_format, flat=False):
 @cli.command()
 @pass_ctx
 def validate(ctx):
-    """
-    Validate CloudFormation templates.
-    """
+    """Validate CloudFormation templates."""
     error = False
     for t in collect_templates(ctx.config):
         valid = t.validate()
@@ -188,9 +170,7 @@ def validate(ctx):
 @cli.command()
 @pass_ctx
 def upload(ctx):
-    """
-    Upload CloudFormation templates and assets to S3.
-    """
+    """Upload CloudFormation templates and assets to S3."""
     process_assets(ctx.config)
     return [t.upload() for t in collect_templates(ctx.config)]
 
@@ -198,16 +178,12 @@ def upload(ctx):
 @cli.command()
 @pass_ctx
 def check(ctx):
-    """
-    Check CloudFormation templates.
-    """
+    """Check CloudFormation templates."""
     check_templates(ctx.config['stack']['template_body'])
 
 
 def process_assets(conf):
-    """
-    Upload project assets to S3.
-    """
+    """Upload project assets to S3."""
     if 'assets' not in conf:
         return
     assets_config = conf['assets']
@@ -231,9 +207,7 @@ def collect_templates(conf):
 
 
 def validate_and_upload(conf):
-    """
-    Validate and upload CloudFormation templates to S3.
-    """
+    """Validate and upload CloudFormation templates to S3."""
     templates = collect_templates(conf)
     error = False
     for t in templates:
