@@ -204,38 +204,6 @@ def check(ctx):
     check_templates(ctx.config['stack']['template_body'])
 
 
-@cli.command()
-def init():
-    """
-    Initialise a Brume project with a simple configuration file ({}).
-    """
-    if path.isfile(DEFAULT_BRUME_CONFIG):
-        click.echo('{0} already exists in current directory. Nothing to do.'.format(DEFAULT_BRUME_CONFIG))
-    else:
-        with open(DEFAULT_BRUME_CONFIG, 'w') as brume_file:
-            brume_file.write("""
----
-region: {{ env('AWS_DEFAULT_REGION', 'eu-west-1') }}
-
-{% set stack_name = 'my-stack' %}
-
-stack:
-    stack_name: {{ stack_name }}
-
-    template_body: Main.json
-    capabilities: [ CAPABILITY_IAM ]
-    on_failure: DELETE
-
-    parameters:
-    GitCommit:  '{{ git_commit }}'
-    GitBranch:  '{{ git_branch }}'
-
-templates:
-    s3_bucket: my_bucket
-    s3_path: {{ stack_name }}
-""")
-
-
 def process_assets(conf):
     """
     Upload project assets to S3.
