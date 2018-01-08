@@ -20,3 +20,11 @@ def cfn_client():
 
 def s3_client():
     return boto_client('s3')
+
+
+def bucket_exists(bucket):
+    try:
+        s3_client().head_bucket(Bucket=bucket)
+        return True
+    except ClientError:
+        return False

@@ -190,8 +190,11 @@ def process_assets(conf):
     local_path = assets_config['local_path']
     s3_bucket = assets_config['s3_bucket']
     s3_path = assets_config['s3_path']
-    click.echo('Processing assets from {} to s3://{}/{}'.format(local_path, s3_bucket, s3_path))
-    send_assets(local_path, s3_bucket, s3_path)
+    if bucket_exists(s3_bucket):
+        click.echo('Processing assets from {} to s3://{}/{}'.format(local_path, s3_bucket, s3_path))
+        send_assets(local_path, s3_bucket, s3_path)
+    else:
+        click.echo('Bucket does not exist {}'.format(s3_bucket))
 
 
 def collect_templates(conf):
