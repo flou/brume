@@ -2,21 +2,20 @@
 Brume CLI module.
 """
 
+import json
 from glob import glob
 from os import path
 
 import click
 from yaml import dump
-import json
 
-from . import VERSION
-from .assets import send_assets
-from .checker import check_templates
-from .config import Config
-from .stack import Stack
-from .template import Template
-
-DEFAULT_BRUME_CONFIG = 'brume.yml'
+import brume.config
+from brume import VERSION
+from brume.assets import send_assets
+from brume.boto_client import bucket_exists
+from brume.checker import check_templates
+from brume.stack import Stack
+from brume.template import Template
 
 
 class Context(object):
@@ -35,7 +34,8 @@ pass_ctx = click.make_pass_decorator(Context, ensure=True)
 
 def config_callback(ctx, _, value):
     ctx = ctx.ensure_object(Context)
-    ctx.config = Config.load(value)
+    brume.config.configuration_file = value
+    ctx.config = brume.config.Config.load()
     ctx.stack = Stack(ctx.config['stack'])
     return value
 
@@ -43,8 +43,8 @@ def config_callback(ctx, _, value):
 @click.group()
 @click.version_option(VERSION, '-v', '--version')
 @click.help_option('-h', '--help')
-@click.option('-c', '--config', expose_value=False, default=DEFAULT_BRUME_CONFIG,
-              help='Configuration file (defaults to {}).'.format(DEFAULT_BRUME_CONFIG),
+@click.option('-c', '--config', expose_value=False, default=brume.config.DEFAULT_BRUME_CONFIG,
+              help='Configuration file (defaults to {}).'.format(brume.config.DEFAULT_BRUME_CONFIG),
               callback=config_callback)
 def cli():
     pass

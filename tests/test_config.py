@@ -11,7 +11,7 @@ class TestConfig(unittest.TestCase):
         """A configuration file can be loaded."""
         current_path = os.path.dirname(os.path.abspath(__file__))
         config_template = os.path.join(current_path, 'test_load_config.yml')
-        conf = Config.load(config_template)
+        conf = Config.load()
 
         assert conf['region'] == 'eu-west-1'
         assert isinstance(conf['stack'], dict)
