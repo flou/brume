@@ -1,6 +1,4 @@
-"""
-Stack.
-"""
+"""Stack."""
 
 import time
 from datetime import datetime, timedelta
@@ -12,6 +10,8 @@ from botocore.exceptions import ClientError
 
 from brume.boto_client import cfn_client
 from brume.color import Color
+from brume.config import Config
+from brume.template import Template
 
 TZ = pytz.timezone('UTC')
 
@@ -53,9 +53,7 @@ def _outputs_for(stack):
 
 
 class Stack(object):
-    """
-    Represent a CloudFormation stack.
-    """
+    """Represent a CloudFormation stack."""
 
     stack_name = None
     capabilities = []
@@ -67,24 +65,27 @@ class Stack(object):
         self.capabilities = conf.get('capabilities', [])
         self.parameters = _make_parameters(conf.get('parameters', {}))
         self.tags = _make_tags(conf.get('tags', {}))
+        self.main_template = Template(self.template_body, Config.config['templates'])
 
-        # Check the events 30 seconds before if the stack update starts way too soon
-        self.update_started_at = datetime.now(TZ) - timedelta(seconds=30)
+        # Check the events 10 seconds before if the stack update starts way too soon
+        self.update_started_at = datetime.now(TZ) - timedelta(seconds=10)
 
     @property
     def configuration(self):
-        return dict(
+        stack_cfg = dict(
             StackName=self.stack_name,
-            TemplateBody=open(self.template_body, 'r').read(),
             Parameters=self.parameters,
             Capabilities=self.capabilities,
             Tags=self.tags,
         )
+        if self.main_template.template_is_too_large:
+            stack_cfg['TemplateURL'] = self.main_template.public_url
+        else:
+            stack_cfg['TemplateBody'] = self.main_template.content
+        return stack_cfg
 
     def get_stacks(self):
-        """
-        Return a list of stacks containing the current stack and its nested stack resources.
-        """
+        """Return a list of stacks containing the current stack and its nested stack resources."""
         stacks = [self.stack_name]
         substacks = cfn_client().describe_stack_resources(StackName=self.stack_name)
         stacks.extend([
