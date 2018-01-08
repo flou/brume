@@ -1,6 +1,4 @@
-"""
-Template module.
-"""
+"""Template module."""
 
 import logging
 import os
@@ -17,11 +15,7 @@ CFN_TEMPLATE_SIZE_LIMIT = 51200
 
 
 class Template(object):
-    """
-    CloudFormation template.
-    """
-
-    key = None
+    """CloudFormation template."""
 
     def __init__(self, file_path, config):
         self.local_file_path = file_path
@@ -34,23 +28,28 @@ class Template(object):
 
     @property
     def public_url(self):
+        """Return the template's public URL on S3."""
         s3_url = os.path.normpath('{0}.s3.amazonaws.com/{1}'.format(self.s3_bucket, self.s3_key))
         return 'https://{0}'.format(s3_url)
 
     @property
     def s3_key(self):
+        """Return the template's key on S3."""
         return os.path.normpath('{0}/{1}'.format(self.s3_path, self.file_path)).strip('/')
 
     @property
     def size(self):
+        """Return the template's file size."""
         return os.path.getsize(self.local_file_path)
 
     @property
     def template_is_too_large(self):
+        """Return True if the template's file size is greater than CFN_TEMPLATE_SIZE_LIMIT."""
         return self.size > CFN_TEMPLATE_SIZE_LIMIT
 
     @property
     def content(self):
+        """Return the template's content."""
         try:
             with open(self.local_file_path, 'r') as _file:
                 return _file.read()
