@@ -10,6 +10,13 @@ import delegator
 import yaml
 import jinja2
 
+DEFAULT_BRUME_CONFIG = 'brume.yml'
+configuration_file = None
+
+
+def brume_config_file():
+    return configuration_file or DEFAULT_BRUME_CONFIG
+
 
 def is_installed(cmd):
     """Check that ``cmd`` is installed and available in $PATH."""
@@ -27,7 +34,10 @@ def is_git_repo():
     return True
 
 
-class Config():
+class Config(object):
+    """Configuration."""
+
+    config = {}
 
     @staticmethod
     def env(key, default=None):
@@ -65,11 +75,12 @@ class Config():
 
     @staticmethod
     def git_config():
+        """Return the Git configuration if the current directory is a Git repo."""
         if not is_installed('git'):
             click.secho('[WARN] git is not installed or not in $PATH', err=True, fg='red')
             return {}
         if not is_git_repo():
-            click.secho('[ERROR] Current directory is not a Git repository', err=True, fg='red')
+            click.secho('[WARN] Current directory is not a Git repository', err=True, fg='red')
             return {}
         return dict(
             branch_name=Config._git_branch(),
@@ -77,8 +88,8 @@ class Config():
             commit_msg=Config._git_commit_msg()
         )
 
-    @staticmethod
-    def load(config_file):
+    @classmethod
+    def load(cls, config_file=None):
         """
         Return the YAML configuration for a project based on the `config_file` template.
 
@@ -86,20 +97,27 @@ class Config():
         The `git_branch` and `git_commit` values are exposed only when a `.git` folder
         exists in the current directory
         """
-        template = Config.render(config_file)
-        template_env = dict(
-            env=Config.env,
-            git=Config.git_config(),
-            git_branch=Config._git_branch(),
-            git_commit=Config._git_commit())
-        try:
-            return yaml.load(template.render(**template_env))
-        except jinja2.exceptions.UndefinedError as err:
-            click.secho('[ERROR] {0} in {1}'.format(err.message, config_file), err=True, fg='red')
-            exit(1)
+        config_file = config_file or brume_config_file()
+        if not Config.config:
+            template = Config.render(config_file)
+            template_env = dict(
+                env=Config.env,
+                git=Config.git_config(),
+                git_branch=Config._git_branch(),
+                git_commit=Config._git_commit())
+            try:
+                Config.config = yaml.load(template.render(**template_env))
+            except jinja2.exceptions.UndefinedError as err:
+                click.secho('[ERROR] {0} in {1}'.format(err.message, config_file), err=True, fg='red')
+                exit(1)
+            except KeyError as err:
+                click.secho('[ERROR] {0} in {1}'.format(err.message, config_file), err=True, fg='red')
+                exit(1)
+        return Config.config
 
     @staticmethod
     def render(config_file):
+        """Render config_file as a Jinja template."""
         path, filename = os.path.split(os.path.abspath(config_file))
         try:
             return jinja2.Environment(
