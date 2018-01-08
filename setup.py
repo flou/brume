@@ -29,7 +29,7 @@ REQUIRED = [
     'crayons==0.1.2',
     'click>=6.7',
     'PyYAML==3.12',
-    'Jinja2==2.9.6',
+    'Jinja2==2.10',
     'pytz==2017.2',
     'delegator.py==0.0.13',
     'six==1.11.0'
