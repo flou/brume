@@ -182,8 +182,8 @@ def check_templates(template):
             for param in substack.extra_parameters():
                 click.echo('Stack {0} is giving extra parameter {1} to substack: {2}'.format(
                     crayons.yellow(main_stack_name),
-                    crayons.yellow(name),
-                    crayons.red(param)
+                    crayons.red(param),
+                    crayons.yellow(name)
                 ), err=True)
                 error = True
 
