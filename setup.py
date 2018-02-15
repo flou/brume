@@ -25,13 +25,13 @@ AUTHORS = {
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'boto3>=1.4.5',
+    'boto3>=1.5.27',
     'crayons==0.1.2',
     'click>=6.7',
     'PyYAML==3.12',
     'Jinja2==2.10',
-    'pytz==2017.2',
-    'delegator.py==0.0.13',
+    'pytz==2018.3',
+    'delegator.py==0.0.14',
     'six==1.11.0'
 ]
 

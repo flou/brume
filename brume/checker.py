@@ -1,6 +1,5 @@
-"""
-cfn-check
-"""
+"""Brume CloudFormation checker."""
+
 import json
 import logging
 import os
@@ -8,7 +7,7 @@ import sys
 
 import click
 import crayons
-from six import text_type, string_types
+from six import string_types
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +17,7 @@ CFN_GETATT = 'Fn::GetAtt'
 
 
 class Stack(object):
-    """docstring for Stack."""
+    """A CloudFormation Stack."""
 
     def __init__(self, name):
         self.name = name
@@ -35,14 +34,24 @@ class Stack(object):
 
     def find(self, key):
         """
-        Return a list of resources and outputs that contain ``key``.
+        Return a list of resources and outputs that contain `key`.
+
+        find('Fn::GetAtt') returns the list of nodes (resources and outputs)
+        that use the GetAtt function.
+
+        >>> from brume.checker import Stack
+        >>> stack = Stack('Main').load_from_file('cloudformation/Main.cform')
+        >>> stack.find('Fn::GetAtt')
         """
-        outputs_refs = list(Stack.find_nodes(self.outputs, key))
-        resources_refs = list(Stack.find_nodes(self.resources, key))
-        return resources_refs + outputs_refs
+        return sum([
+            list(Stack.find_nodes(nodes, key))
+            for nodes in [self.resources, self.outputs]
+        ], [])
 
     def missing_refs(self):
         """
+        Detect missing Ref statements.
+
         Return a list of Ref statements that point to non-existing resources or
         parameters in the template.
         """
@@ -57,6 +66,8 @@ class Stack(object):
 
     def missing_getatt(self):
         """
+        Detect missing GetAtt statements.
+
         Return a list of GetAtt statements that point to non-existing resources
         or parameters in the template.
         """
@@ -71,6 +82,8 @@ class Stack(object):
 
     def missing_parameters(self):
         """
+        Detect missing parameters.
+
         Return a list of parameters that are expected in the substack with no
         default value but have no parameter in the main stack.
         """
@@ -82,6 +95,8 @@ class Stack(object):
 
     def extra_parameters(self):
         """
+        Detect extra parameters.
+
         Return a list of parameters that are passed from the main stack but are
         not expected in the substack definition.
         """
@@ -92,26 +107,45 @@ class Stack(object):
         ]
 
     def load_from_file(self, name=None):
-        """
-        Create a Stack from its template.
-        """
+        """Create a Stack from its template."""
         stack_name = name if name else self.name
         try:
-            template = open(stack_name, 'r')
+            with open(stack_name, 'r') as f_template:
+                template = json.load(f_template)
         except IOError as err:
             click.echo('Template for stack {0} not found'.format(stack_name), err=True)
             click.echo(err, err=True)
             sys.exit(1)
-        template = json.load(template)
         self.outputs = template.get('Outputs', {})
         self.parameters = template.get('Parameters', {})
         self.resources = template.get('Resources', {})
+        return self
+
+    def substacks(self):
+        """Return the current stack nested stacks."""
+        return {
+            stack_name: substack
+            for stack_name, substack in self.resources.items()
+            if substack['Type'] == 'AWS::CloudFormation::Stack'
+        }
+
+    def detect_parameter_name_mismatch(self):
+        """Detect possible mismatch between parameter names and outputs."""
+        for stack_name, substack in self.substacks().items():
+            for parameter_name, param in substack['Properties'].get('Parameters', {}).items():
+                if CFN_GETATT in param:
+                    output_name = param[CFN_GETATT][1].replace('Outputs.', '')
+                    if parameter_name != output_name:
+                        source_stack = param[CFN_GETATT][0]
+                        warning_message = 'Possible parameter name mismatch: output {}.{} is given to {}.{}'
+                        click.echo(warning_message.format(
+                            source_stack, crayons.yellow(output_name),
+                            stack_name, crayons.yellow(parameter_name),
+                        ))
 
     @staticmethod
     def new_substack(stack_name, resource):
-        """
-        Create a substack.
-        """
+        """Create a substack."""
         newstack = Stack(stack_name)
         newstack.input_parameters = resource['Properties'].get('Parameters', {})
         newstack.template_url = resource['Properties'].get('TemplateURL', {})
@@ -119,27 +153,35 @@ class Stack(object):
 
     @staticmethod
     def aws_pseudo_parameter(v):
-        """
-        Check that ``v`` is an AWS pseudo-parameter (like AWS::Region).
-        """
-        return isinstance(v, string_types) and v.startswith('AWS::')
+        """Check that `v` is an AWS pseudo-parameter (like AWS::Region) or resource type."""
+        return isinstance(v, string_types) and v.upper().startswith('AWS::')
 
     @staticmethod
     def find_nodes(node, key):
-        if not isinstance(node, dict):
-            return
-        for k, v in node.items():
-            if Stack.aws_pseudo_parameter(v):
-                continue
-            if k == key:
-                yield v
-            elif isinstance(v, list):
-                for n in v:
-                    for id_val in Stack.find_nodes(n, key):
+        """
+        Return nodes that match a node type and key.
+
+        Recursively parses the template to find nodes.
+        """
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if Stack.aws_pseudo_parameter(v):
+                    continue
+                if k == key:
+                    yield v
+                elif isinstance(v, list):
+                    for n in v:
+                        for id_val in Stack.find_nodes(n, key):
+                            yield id_val
+                elif isinstance(v, dict):
+                    for id_val in Stack.find_nodes(v, key):
                         yield id_val
-            elif isinstance(v, dict):
-                for id_val in Stack.find_nodes(v, key):
+        elif isinstance(node, list):
+            for k in node:
+                for id_val in Stack.find_nodes(k, key):
                     yield id_val
+        else:
+            return
 
 
 def check_templates(template):
@@ -163,6 +205,8 @@ def check_templates(template):
         if resource['Type'] == 'AWS::CloudFormation::Stack'
     }
     stacks[main_stack_name] = main_stack
+
+    main_stack.detect_parameter_name_mismatch()
 
     error = False
     for name, substack in stacks.items():
@@ -194,8 +238,8 @@ def check_templates(template):
             error = True
 
         for getatt in substack.missing_getatt():
-            click.echo('Stack {0} has undefined {1} statement: {2}'.format(
-                crayons.yellow(name), crayons.yellow('GetAtt'), crayons.red(getatt)
+            click.echo('Stack {0} has undefined {1} statement: {2}.{3}'.format(
+                crayons.yellow(name), crayons.yellow('GetAtt'), crayons.red(getatt[0]), getatt[1]
             ), err=True)
             error = True
 
@@ -210,7 +254,7 @@ def check_templates(template):
                     crayons.red(output_name),
                     crayons.yellow(stack.name)
                 ), err=True)
-                error = 1
+                error = True
 
     if not error:
         click.echo(crayons.green('Congratulations, your templates appear to be OK!\n'))
