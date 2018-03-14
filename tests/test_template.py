@@ -8,6 +8,7 @@ from moto import mock_s3
 from brume.template import Template
 
 CONFIG = {
+    'region': 'eu-west-1',
     'local_path': 'test_stack',
     's3_bucket': 'dummy-bucket',
 }
@@ -48,6 +49,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_public_url_with_s3_path(self):
         config = {
+            'region': 'eu-west-1',
             'local_path': 'test_stack',
             's3_bucket': 'dummy-bucket',
             's3_path': 'cloudformation',
@@ -57,6 +59,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_s3_key_with_s3_path(self):
         config = {
+            'region': 'eu-west-1',
             'local_path': 'test_stack',
             's3_bucket': 'dummy-bucket',
             's3_path': 'cloudformation',

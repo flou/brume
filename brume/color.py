@@ -1,10 +1,18 @@
+"""
+Color utitity
+"""
+
 import crayons
 
 
 class Color():
+    """Color."""
 
     @staticmethod
     def for_status(status):
+        """
+        return associated color for status
+        """
         colors_map = {
             # ERRORS
             # 1 == red

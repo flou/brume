@@ -21,6 +21,7 @@ DESCRIPTION = 'AWS Cloudformation deployer. '
 URL = 'https://github.com/flou/brume'
 AUTHORS = {
     'ferrand@ekino.com': 'Lou Ferrand',
+    'jguibert@gmail.com': 'Jerome Guibert'
 }
 
 # What packages are required for this module to be executed?

@@ -27,16 +27,22 @@ class Context(object):
         self.config = dict()
         self.stack = None
         self.debug = False
+        self.region = None
 
 
 pass_ctx = click.make_pass_decorator(Context, ensure=True)
 
 
 def config_callback(ctx, _, value):
+    """
+    Initialize context object
+    """
     ctx = ctx.ensure_object(Context)
     brume.config.configuration_file = value
     ctx.config = brume.config.Config.load()
-    ctx.stack = Stack(ctx.config['stack'])
+    if ctx.region is None:
+        ctx.region = ctx.config['region']
+    ctx.stack = Stack(ctx.region, ctx.config['stack'])
     return value
 
 
@@ -47,6 +53,7 @@ def config_callback(ctx, _, value):
               help='Configuration file (defaults to {}).'.format(brume.config.DEFAULT_BRUME_CONFIG),
               callback=config_callback)
 def cli():
+    """Set global cli option"""
     pass
 
 
@@ -61,7 +68,7 @@ def config(ctx):
 @pass_ctx
 def create(ctx):
     """Create a new CloudFormation stack."""
-    validate_and_upload(ctx.config)
+    validate_and_upload(ctx.region, ctx.config)
     ctx.stack.create()
 
 
@@ -69,7 +76,7 @@ def create(ctx):
 @pass_ctx
 def update(ctx):
     """Update an existing CloudFormation stack."""
-    validate_and_upload(ctx.config)
+    validate_and_upload(ctx.region, ctx.config)
     ctx.stack.update()
 
 
@@ -77,7 +84,7 @@ def update(ctx):
 @pass_ctx
 def deploy(ctx):
     """Create or update a CloudFormation stack."""
-    validate_and_upload(ctx.config)
+    validate_and_upload(ctx.region, ctx.config)
     ctx.stack.create_or_update()
     ctx.stack.outputs()
 
@@ -171,7 +178,7 @@ def validate(ctx):
 @pass_ctx
 def upload(ctx):
     """Upload CloudFormation templates and assets to S3."""
-    process_assets(ctx.config)
+    process_assets(ctx.region, ctx.config)
     return [t.upload() for t in collect_templates(ctx.config)]
 
 
@@ -182,7 +189,7 @@ def check(ctx):
     check_templates(ctx.config['stack']['template_body'])
 
 
-def process_assets(conf):
+def process_assets(region, conf):
     """Upload project assets to S3."""
     if 'assets' not in conf:
         return
@@ -190,9 +197,9 @@ def process_assets(conf):
     local_path = assets_config['local_path']
     s3_bucket = assets_config['s3_bucket']
     s3_path = assets_config['s3_path']
-    if bucket_exists(s3_bucket):
+    if bucket_exists(region, s3_bucket):
         click.echo('Processing assets from {} to s3://{}/{}'.format(local_path, s3_bucket, s3_path))
-        send_assets(local_path, s3_bucket, s3_path)
+        send_assets(region, local_path, s3_bucket, s3_path)
     else:
         click.echo('Bucket does not exist {}'.format(s3_bucket))
 
@@ -209,7 +216,7 @@ def collect_templates(conf):
     return [Template(t, conf['templates']) for t in template_paths]
 
 
-def validate_and_upload(conf):
+def validate_and_upload(region, conf):
     """Validate and upload CloudFormation templates to S3."""
     templates = collect_templates(conf)
     error = False
@@ -220,7 +227,7 @@ def validate_and_upload(conf):
         exit(1)
     for t in templates:
         t.upload()
-    process_assets(conf)
+    process_assets(region, conf)
 
 
 if __name__ == '__main__':

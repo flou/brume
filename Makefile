@@ -18,7 +18,7 @@ RESET  := $(shell tput -Txterm sgr0)
 # A category can be added with @category
 HELP_HELPER = \
 		%help; \
-		while(<>) { push @{$$help{$$2 // 'targets'}}, [$$1, $$3] if /^([a-zA-Z\-\%]+)\s*:.*\#\#(?:@([a-zA-Z\-\%]+))?\s(.*)$$/ }; \
+		while(<>) { push @{$$help{$$2 // 'targets'}}, [$$1, $$3] if /^([a-zA-Z_\-\%]+)\s*:.*\#\#(?:@([a-zA-Z\-\%]+))?\s(.*)$$/ }; \
 		print "usage: make [target]\n\n"; \
 		for (sort keys %help) { \
 		print "${WHITE}$$_:${RESET}\n"; \
@@ -38,6 +38,10 @@ help: ##@help Prints help
 #
 ###################################################################################################
 
+.PHONY: deps
+deps:  ## Install Python dependencies
+	pip install --quiet --upgrade --requirement requirements.txt
+
 .PHONY: check_style
 check_style:  ## Check Python code style
 	pycodestyle *.py brume --config .pycodestyle
@@ -52,6 +56,10 @@ clean:  ## Clean temporary and build files
 publish: clean  ## Create Python package and upload to PyPI
 	@python setup.py publish
 
+.PHONY: build
+build: clean ## Build project
+	@python setup.py build install
+
 .PHONY: test
-test:  ## Run tests
+test: build  ## Run tests
 	@pytest tests

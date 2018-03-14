@@ -12,7 +12,7 @@ import crayons
 from brume.boto_client import s3_client
 
 
-def send_assets(local_path, s3_bucket, s3_path=''):
+def send_assets(region, local_path, s3_bucket, s3_path=''):
     """
     Send directory '{local_path}' under 's3://{s3_bucket}/{s3_path}'.
     """
@@ -23,5 +23,5 @@ def send_assets(local_path, s3_bucket, s3_path=''):
             click.echo('Publishing {} to {}'.format(
                 crayons.yellow(sourcepath), s3_bucket + '/' + key))
             with click.open_file(sourcepath) as asset:
-                s3_client().put_object(
+                s3_client(region).put_object(
                     Bucket=s3_bucket, Body=asset.read(), Key=key)

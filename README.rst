@@ -167,3 +167,25 @@ Their values are taken directly from the current repository.
       s3_bucket: my_bucket
       s3_path: {{ stack_name }}/assets
       local_path: assets
+
+In your Jinja2 template we have predefined function:
+
+* ``env(var_name)`` which get value of specified environment variable var_name
+* ``cfn`` which get output param of specified cloudformation stack.
+
+Example usage of cfn function:
+
+::
+
+    {% set region = env('AWS_REGION') %}
+    region: {{ region }}
+    
+    parameters:
+      MyParam: {{ cfn(region, 'my_other_stack', 'MyParam') }} # get parameter 'MyParam' of stack 'my_other_stack'
+      VPCStackName: {{ cfn(region, 'my_other_stack', 'Vpc', 'VPC_ID') }} # get parameter 'VPC_ID' of nested stack 'Vpc' of stack 'my_other_stack'
+
+
+
+
+
+
