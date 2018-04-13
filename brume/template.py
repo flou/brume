@@ -80,14 +80,17 @@ class Template(object):
             validation_path = self.public_url + TEMPLATE_COPY_SUFFIX
             params = {'TemplateURL': validation_path}
         try:
-            click.echo('Validating {0} ...'.format(
+            click.echo('Validating {0} ... '.format(
                 crayons.yellow(validation_path)), nl=False)
-            cfn_client(self.region).validate_template(**params)
+            response = cfn_client(self.region).validate_template(**params)
         except ClientError as error:
             click.echo(crayons.red('invalid'))
             click.echo(error.message, err=True)
             return False
-        click.echo(crayons.green('valid'))
+        click.echo(crayons.green('valid'), nl=False)
+        if 'Capabilities' in response:
+            click.echo(' requires capabilities: ' + crayons.yellow(','.join(response['Capabilities'])), nl=False)
+        click.echo()
         return True
 
     def upload(self, copy=False):
