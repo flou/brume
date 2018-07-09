@@ -29,7 +29,7 @@ REQUIRED = [
     'boto3>=1.5.27',
     'crayons==0.1.2',
     'click>=6.7',
-    'PyYAML==3.12',
+    'PyYAML>=3.13',
     'Jinja2==2.10',
     'pytz==2018.3',
     'delegator.py==0.0.14',
