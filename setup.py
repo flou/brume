@@ -22,14 +22,14 @@ AUTHORS = {'ferrand@ekino.com': 'Lou Ferrand', 'jguibert@gmail.com': 'Jerome Gui
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'boto3>=1.9.37',
-    'crayons==0.1.2',
-    'click>=6.7',
-    'PyYAML>=3.13',
-    'Jinja2==2.10',
-    'pytz>=2018.7',
+    'boto3>=1.9.145',
+    'crayons==0.2.0',
+    'click>=7.0',
+    'PyYAML>=5.1',
+    'Jinja2==2.10.1',
+    'pytz>=2019.1',
     'delegator.py>=0.1.1',
-    'six==1.11.0',
+    'six>=1.12.0',
 ]
 
 # The rest you shouldn't have to touch too much :)
