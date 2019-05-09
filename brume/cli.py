@@ -64,7 +64,7 @@ def cli():
 @pass_ctx
 def config_cmd(ctx):
     """Print the current stack configuration."""
-    click.echo(dump(ctx.config, default_flow_style=False))
+    click.echo(safe_dump(ctx.config, default_flow_style=False))
 
 
 @cli.command()
