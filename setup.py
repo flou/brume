@@ -11,29 +11,25 @@ import re
 import sys
 from shutil import rmtree
 
-from setuptools import find_packages, setup, Command
-
 from brume import VERSION
+from setuptools import Command, find_packages, setup
 
 # Package meta-data.
 NAME = 'brume'
 DESCRIPTION = 'AWS Cloudformation deployer. '
 URL = 'https://github.com/flou/brume'
-AUTHORS = {
-    'ferrand@ekino.com': 'Lou Ferrand',
-    'jguibert@gmail.com': 'Jerome Guibert'
-}
+AUTHORS = {'ferrand@ekino.com': 'Lou Ferrand', 'jguibert@gmail.com': 'Jerome Guibert'}
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'boto3>=1.5.27',
+    'boto3>=1.9.37',
     'crayons==0.1.2',
     'click>=6.7',
     'PyYAML>=3.13',
     'Jinja2==2.10',
-    'pytz==2018.3',
-    'delegator.py==0.0.14',
-    'six==1.11.0'
+    'pytz>=2018.7',
+    'delegator.py>=0.1.1',
+    'six==1.11.0',
 ]
 
 # The rest you shouldn't have to touch too much :)
@@ -50,9 +46,7 @@ with io.open(os.path.join(HERE, 'README.rst'), encoding='utf-8') as f:
 
 
 def _download_url():
-    return '{repo}/repository/archive.tar.gz?ref={version}'.format(
-        repo=URL, version=VERSION
-    )
+    return '{repo}/repository/archive.tar.gz?ref={version}'.format(repo=URL, version=VERSION)
 
 
 def read(fname):
@@ -109,9 +103,7 @@ setup(
     tests_require=['pytest', 'moto'],
     keywords=['AWS', 'CloudFormation'],
     install_requires=REQUIRED,
-    entry_points={
-        'console_scripts': ['brume=brume.cli:cli']
-    },
+    entry_points={'console_scripts': ['brume=brume.cli:cli']},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -120,13 +112,11 @@ setup(
         'Operating System :: MacOS',
         'Operating System :: Unix',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    cmdclass={
-        'publish': PublishCommand,
-    }
+    cmdclass={'publish': PublishCommand},
 )

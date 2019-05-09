@@ -15,14 +15,14 @@ def cfn_client(region):
     """
     Instanciate cloudformation client for specified region
     """
-    return boto_client('cloudformation', region)
+    return boto_client("cloudformation", region)
 
 
 def s3_client(region):
     """
     Instanciate S3 client for specified region
     """
-    return boto_client('s3', region)
+    return boto_client("s3", region)
 
 
 def bucket_exists(region, bucket):

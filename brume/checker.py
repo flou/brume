@@ -12,18 +12,18 @@ from six import string_types
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-CFN_REF = 'Ref'
-CFN_GETATT = 'Fn::GetAtt'
+CFN_REF = "Ref"
+CFN_GETATT = "Fn::GetAtt"
 
 
-class Stack(object):
+class Stack:
     """A CloudFormation Stack."""
 
     def __init__(self, name):
         self.name = name
         self.outputs = {}
         self.resources = {}
-        self.template_url = ''
+        self.template_url = ""
 
         # Parameters that are passed when declaring the stack as a resource
         # of the main stack
@@ -43,10 +43,9 @@ class Stack(object):
         >>> stack = Stack('Main').load_from_file('cloudformation/Main.cform')
         >>> stack.find('Fn::GetAtt')
         """
-        return sum([
-            list(Stack.find_nodes(nodes, key))
-            for nodes in [self.resources, self.outputs]
-        ], [])
+        return sum(
+            [list(Stack.find_nodes(nodes, key)) for nodes in [self.resources, self.outputs]], []
+        )
 
     def missing_refs(self):
         """
@@ -90,7 +89,7 @@ class Stack(object):
         return [
             param_name
             for param_name, param in self.parameters.items()
-            if param_name not in self.input_parameters and 'Default' not in param
+            if param_name not in self.input_parameters and "Default" not in param
         ]
 
     def extra_parameters(self):
@@ -110,15 +109,15 @@ class Stack(object):
         """Create a Stack from its template."""
         stack_name = name if name else self.name
         try:
-            with open(stack_name, 'r') as f_template:
+            with open(stack_name, "r") as f_template:
                 template = json.load(f_template)
         except IOError as err:
-            click.echo('Template for stack {0} not found'.format(stack_name), err=True)
+            click.echo("Template for stack {0} not found".format(stack_name), err=True)
             click.echo(err, err=True)
             sys.exit(1)
-        self.outputs = template.get('Outputs', {})
-        self.parameters = template.get('Parameters', {})
-        self.resources = template.get('Resources', {})
+        self.outputs = template.get("Outputs", {})
+        self.parameters = template.get("Parameters", {})
+        self.resources = template.get("Resources", {})
         return self
 
     def substacks(self):
@@ -126,35 +125,41 @@ class Stack(object):
         return {
             stack_name: substack
             for stack_name, substack in self.resources.items()
-            if substack['Type'] == 'AWS::CloudFormation::Stack'
+            if substack["Type"] == "AWS::CloudFormation::Stack"
         }
 
     def detect_parameter_name_mismatch(self):
         """Detect possible mismatch between parameter names and outputs."""
         for stack_name, substack in self.substacks().items():
-            for parameter_name, param in substack['Properties'].get('Parameters', {}).items():
+            for parameter_name, param in substack["Properties"].get("Parameters", {}).items():
                 if CFN_GETATT in param:
-                    output_name = param[CFN_GETATT][1].replace('Outputs.', '')
+                    output_name = param[CFN_GETATT][1].replace("Outputs.", "")
                     if parameter_name != output_name:
                         source_stack = param[CFN_GETATT][0]
-                        warning_message = 'Possible parameter name mismatch: output {}.{} is given to {}.{}'
-                        click.echo(warning_message.format(
-                            source_stack, crayons.yellow(output_name),
-                            stack_name, crayons.yellow(parameter_name),
-                        ))
+                        warning_message = (
+                            "Possible parameter name mismatch: output {}.{} is given to {}.{}"
+                        )
+                        click.echo(
+                            warning_message.format(
+                                source_stack,
+                                crayons.yellow(output_name),
+                                stack_name,
+                                crayons.yellow(parameter_name),
+                            )
+                        )
 
     @staticmethod
     def new_substack(stack_name, resource):
         """Create a substack."""
         newstack = Stack(stack_name)
-        newstack.input_parameters = resource['Properties'].get('Parameters', {})
-        newstack.template_url = resource['Properties'].get('TemplateURL', {})
+        newstack.input_parameters = resource["Properties"].get("Parameters", {})
+        newstack.template_url = resource["Properties"].get("TemplateURL", {})
         return newstack
 
     @staticmethod
     def aws_pseudo_parameter(v):
         """Check that `v` is an AWS pseudo-parameter (like AWS::Region) or resource type."""
-        return isinstance(v, string_types) and v.upper().startswith('AWS::')
+        return isinstance(v, string_types) and v.upper().startswith("AWS::")
 
     @staticmethod
     def find_nodes(node, key):
@@ -202,7 +207,7 @@ def check_templates(template):
     stacks = {
         name: Stack.new_substack(name, resource)
         for name, resource in main_stack.resources.items()
-        if resource['Type'] == 'AWS::CloudFormation::Stack'
+        if resource["Type"] == "AWS::CloudFormation::Stack"
     }
     stacks[main_stack_name] = main_stack
 
@@ -211,52 +216,66 @@ def check_templates(template):
     error = False
     for name, substack in stacks.items():
         substack_path = os.path.join(templates_path, name) + filetype
-        LOGGER.debug('Loading Stack %s file %s', name, substack_path)
+        LOGGER.debug("Loading Stack %s file %s", name, substack_path)
         substack.load_from_file(substack_path)
 
         if name != main_stack_name:
             # We don't validate Parameters on the Main stack
             for param in substack.missing_parameters():
-                click.echo('Stack {0} should give substack {1} parameter: {2}'.format(
-                    crayons.yellow(main_stack_name),
-                    crayons.yellow(name),
-                    crayons.red(param)
-                ), err=True)
+                click.echo(
+                    "Stack {0} should give substack {1} parameter: {2}".format(
+                        crayons.yellow(main_stack_name), crayons.yellow(name), crayons.red(param)
+                    ),
+                    err=True,
+                )
                 error = True
             for param in substack.extra_parameters():
-                click.echo('Stack {0} is giving extra parameter {1} to substack: {2}'.format(
-                    crayons.yellow(main_stack_name),
-                    crayons.red(param),
-                    crayons.yellow(name)
-                ), err=True)
+                click.echo(
+                    "Stack {0} is giving extra parameter {1} to substack: {2}".format(
+                        crayons.yellow(main_stack_name), crayons.red(param), crayons.yellow(name)
+                    ),
+                    err=True,
+                )
                 error = True
 
         for ref in substack.missing_refs():
-            click.echo('Stack {0} has undefined {1} statement: {2}'.format(
-                crayons.yellow(name), crayons.yellow('Ref'), crayons.red(ref)
-            ), err=True)
+            click.echo(
+                "Stack {0} has undefined {1} statement: {2}".format(
+                    crayons.yellow(name), crayons.yellow("Ref"), crayons.red(ref)
+                ),
+                err=True,
+            )
             error = True
 
         for getatt in substack.missing_getatt():
-            click.echo('Stack {0} has undefined {1} statement: {2}.{3}'.format(
-                crayons.yellow(name), crayons.yellow('GetAtt'), crayons.red(getatt[0]), getatt[1]
-            ), err=True)
+            click.echo(
+                "Stack {0} has undefined {1} statement: {2}.{3}".format(
+                    crayons.yellow(name),
+                    crayons.yellow("GetAtt"),
+                    crayons.red(getatt[0]),
+                    getatt[1],
+                ),
+                err=True,
+            )
             error = True
 
     # Special case for the Main stack GetAtt
     for att in main_stack.find(CFN_GETATT):
-        if att[1].startswith('Outputs.') and att[0] in stacks:
+        if att[1].startswith("Outputs.") and att[0] in stacks:
             stack = stacks[att[0]]
-            output_name = att[1].replace('Outputs.', '')
+            output_name = att[1].replace("Outputs.", "")
             if output_name not in stacks[att[0]].outputs:
-                click.echo('Stack {0} references undefined Output {1} from substack {2}'.format(
-                    crayons.yellow(main_stack_name),
-                    crayons.red(output_name),
-                    crayons.yellow(stack.name)
-                ), err=True)
+                click.echo(
+                    "Stack {0} references undefined Output {1} from substack {2}".format(
+                        crayons.yellow(main_stack_name),
+                        crayons.red(output_name),
+                        crayons.yellow(stack.name),
+                    ),
+                    err=True,
+                )
                 error = True
 
     if not error:
-        click.echo(crayons.green('Congratulations, your templates appear to be OK!\n'))
+        click.echo(crayons.green("Congratulations, your templates appear to be OK!\n"))
     else:
         sys.exit(error)

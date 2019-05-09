@@ -18,19 +18,22 @@ def _stack_walker(client, outputs, stack, collector):
     Map collector function on stack and nested stack.
     """
     try:
-        description = client.describe_stacks(StackName=stack)['Stacks'][0]
+        description = client.describe_stacks(StackName=stack)["Stacks"][0]
         collector(outputs, description)
-        substacks = [s for s in client.describe_stack_resources(StackName=stack)[
-            'StackResources'] if s['ResourceType'] == 'AWS::CloudFormation::Stack']
+        substacks = [
+            s
+            for s in client.describe_stack_resources(StackName=stack)["StackResources"]
+            if s["ResourceType"] == "AWS::CloudFormation::Stack"
+        ]
         for s in substacks:
-            outputs[s['LogicalResourceId']] = {}
+            outputs[s["LogicalResourceId"]] = {}
             _stack_walker(
-                client, outputs[s['LogicalResourceId']], s['PhysicalResourceId'], collector)
+                client, outputs[s["LogicalResourceId"]], s["PhysicalResourceId"], collector
+            )
         return outputs
     except ClientError as e:
-        if 'does not exist' in e.message:
-            click.secho('Stack [{}] does not exist'.format(
-                stack), err=True, fg='red')
+        if "does not exist" in e.response["Error"]["Message"]:
+            click.secho("Stack [{}] does not exist".format(stack), err=True, fg="red")
             exit(1)
         else:
             raise e
@@ -40,8 +43,8 @@ def _output_collector(outputs, description):
     """
     aggregate Outputs key/value from description
     """
-    for o in description.get('Outputs', []):
-        outputs[o['OutputKey']] = o['OutputValue']
+    for o in description.get("Outputs", []):
+        outputs[o["OutputKey"]] = o["OutputValue"]
 
 
 def stack_outputs(region, stack_name):

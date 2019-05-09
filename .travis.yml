@@ -1,18 +1,28 @@
 language: python
 python:
-  - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
-  # - "3.7"
+
+matrix:
+  include:
+    - python: "3.7"
+      sudo: required
+      dist: xenial
 
 env:
-  - AWS_DEFAULT_REGION=us-east-1
+  global:
+    - BOTO_CONFIG=/dev/null
+    - AWS_DEFAULT_REGION=us-east-1
+    - AWS_ACCESS_KEY_ID=foobar
+    - AWS_SECRET_ACCESS_KEY=foobar
 
 # command to install dependencies
 install:
   - pip install .
-  - pip install -qr requirements.txt
 
 # command to run tests
-script: pytest
+script:
+  - brume --version
+  - brume --help
+  - python setup.py test

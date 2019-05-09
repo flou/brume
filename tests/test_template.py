@@ -3,9 +3,8 @@ import unittest
 
 import boto3
 import pytest
-from moto import mock_s3
-
 from brume.template import Template
+from moto import mock_s3
 
 CONFIG = {
     'region': 'eu-west-1',

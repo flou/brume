@@ -7,12 +7,11 @@ import os
 
 import click
 import delegator
-import yaml
 import jinja2
-
+import yaml
 from brume.output import stack_outputs
 
-DEFAULT_BRUME_CONFIG = 'brume.yml'
+DEFAULT_BRUME_CONFIG = "brume.yml"
 configuration_file = None
 
 
@@ -29,7 +28,9 @@ stack_outputs_definition = {}
 
 def _check_key_exists(key, container, stack_name):
     if key not in container:
-        click.secho('[ERROR] No key {} variable in stack {}'.format(key, stack_name), err=True, fg='red')
+        click.secho(
+            "[ERROR] No key {} variable in stack {}".format(key, stack_name), err=True, fg="red"
+        )
         exit(1)
 
 
@@ -63,13 +64,13 @@ def is_installed(cmd):
 
 def is_git_repo():
     """Check that the current directory is a functioning git repository."""
-    c = delegator.run('git status')
-    if 'fatal: Not a git repository' in c.err:
+    c = delegator.run("git status")
+    if "fatal: Not a git repository" in c.err:
         return False
     return True
 
 
-class Config(object):
+class Config:
     """Configuration."""
 
     config = {}
@@ -93,7 +94,9 @@ class Config(object):
                 return os.getenv(key, default)
             return os.environ[key]
         except KeyError:
-            click.secho('[ERROR] No environment variable with key {}'.format(key), err=True, fg='red')
+            click.secho(
+                "[ERROR] No environment variable with key {}".format(key), err=True, fg="red"
+            )
             exit(1)
 
     @staticmethod
@@ -104,34 +107,34 @@ class Config(object):
         YAML complains if the commit message contains single quotes, so we
         remove those.
         """
-        c = delegator.run('git log -1 --pretty=%s')
-        return c.out.strip().replace('\'', '')
+        c = delegator.run("git log -1 --pretty=%s")
+        return c.out.strip().replace("'", "")
 
     @staticmethod
     def _git_commit():
         """Return the SHA1 of the latest Git commit (HEAD)."""
-        c = delegator.run('git rev-parse --short HEAD')
+        c = delegator.run("git rev-parse --short HEAD")
         return c.out.strip()
 
     @staticmethod
     def _git_branch():
         """Return the name of the current Git branch."""
-        c = delegator.run('git rev-parse --abbrev-ref HEAD')
+        c = delegator.run("git rev-parse --abbrev-ref HEAD")
         return c.out.strip()
 
     @staticmethod
     def git_config():
         """Return the Git configuration if the current directory is a Git repo."""
-        if not is_installed('git'):
-            click.secho('[WARN] git is not installed or not in $PATH', err=True, fg='red')
+        if not is_installed("git"):
+            click.secho("[WARN] git is not installed or not in $PATH", err=True, fg="red")
             return {}
         if not is_git_repo():
-            click.secho('[WARN] Current directory is not a Git repository', err=True, fg='red')
+            click.secho("[WARN] Current directory is not a Git repository", err=True, fg="red")
             return {}
         return dict(
             branch_name=Config._git_branch(),
             commit_sha1=Config._git_commit(),
-            commit_msg=Config._git_commit_msg()
+            commit_msg=Config._git_commit_msg(),
         )
 
     @classmethod
@@ -151,14 +154,17 @@ class Config(object):
                 env=Config.env,
                 git=Config.git_config(),
                 git_branch=Config._git_branch(),
-                git_commit=Config._git_commit())
+                git_commit=Config._git_commit(),
+            )
             try:
                 Config.config = yaml.load(template.render(**template_env))
             except jinja2.exceptions.UndefinedError as err:
-                click.secho('[ERROR] {0} in {1}'.format(err.message, config_file), err=True, fg='red')
+                click.secho(
+                    "[ERROR] {0} in {1}".format(err.message, config_file), err=True, fg="red"
+                )
                 exit(1)
             except KeyError as err:
-                click.secho('[ERROR] {0} in {1}'.format(err.message, config_file), err=True, fg='red')
+                click.secho("[ERROR] {0} in {1}".format(err, config_file), err=True, fg="red")
                 exit(1)
         return Config.config
 
@@ -168,8 +174,10 @@ class Config(object):
         path, filename = os.path.split(os.path.abspath(config_file))
         try:
             return jinja2.Environment(
-                loader=jinja2.FileSystemLoader(path or './'),
-                undefined=jinja2.StrictUndefined).get_template(filename)
+                loader=jinja2.FileSystemLoader(path or "./"), undefined=jinja2.StrictUndefined
+            ).get_template(filename)
         except jinja2.exceptions.TemplateNotFound:
-            click.secho('[ERROR] No such file or directory: {0}'.format(config_file), err=True, fg='red')
+            click.secho(
+                "[ERROR] No such file or directory: {0}".format(config_file), err=True, fg="red"
+            )
             exit(1)
