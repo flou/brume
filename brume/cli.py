@@ -13,7 +13,7 @@ from brume.boto_client import bucket_exists
 from brume.checker import check_templates
 from brume.stack import Stack
 from brume.template import Template
-from yaml import dump
+from yaml import safe_dump
 
 
 class Context:
@@ -64,7 +64,7 @@ def cli():
 @pass_ctx
 def config_cmd(ctx):
     """Print the current stack configuration."""
-    click.echo(dump(ctx.config, default_flow_style=False))
+    click.echo(safe_dump(ctx.config, default_flow_style=False))
 
 
 @cli.command()
@@ -106,72 +106,36 @@ def status(ctx):
     ctx.stack.status()
 
 
-@cli.command("outputs")
-@pass_ctx
-@click.option("--flat", is_flag=True, help="Flat format (only for the text output format)")
-@click.option(
+output_option = click.option(
     "output_format",
     "-f",
     "--format",
-    type=click.Choice(["text", "json", "yaml"]),
-    default="text",
-    help="Output format (text/json/yaml)",
+    type=click.Choice(["json", "yaml"]),
+    default="yaml",
+    help="Output format (json/yaml)",
 )
-def outputs_cmd(ctx, output_format, flat=False):
+
+
+@cli.command("outputs")
+@pass_ctx
+@output_option
+def outputs_cmd(ctx, output_format=None):
     """Get the full list of outputs of a CloudFormation stack."""
     stack_outputs = ctx.stack.outputs()
-    if output_format == "text":
-        if flat:
-            for _, outputs in stack_outputs.items():
-                for output_name, output_value in outputs.items():
-                    click.echo("{} = {}".format(output_name, output_value))
-        else:
-            for stack_name, outputs in stack_outputs.items():
-                if not outputs:
-                    continue
-                if ":stack/" in stack_name:
-                    stack_name = stack_name.partition(":stack/")[2].split("/")[0]
-                click.echo(stack_name)
-                for output_name, output_value in outputs.items():
-                    click.echo("\t{} = {}".format(output_name, output_value))
-                click.echo()
-    elif output_format == "yaml":
-        click.echo(dump(stack_outputs, default_flow_style=False))
+    if output_format == "yaml":
+        click.echo(safe_dump(stack_outputs, default_flow_style=False))
     elif output_format == "json":
         click.echo(json.dumps(stack_outputs, indent=True))
 
 
 @cli.command()
 @pass_ctx
-@click.option("--flat", is_flag=True, help="Flat format (only for the text output format)")
-@click.option(
-    "output_format",
-    "-f",
-    "--format",
-    type=click.Choice(["text", "json", "yaml"]),
-    default="text",
-    help="Output format (text/json/yaml)",
-)
-def parameters(ctx, output_format, flat=False):
+@output_option
+def parameters(ctx, output_format=None):
     """Get the full list of parameters of a CloudFormation stack."""
     stack_params = ctx.stack.params()
-    if output_format == "text":
-        if flat:
-            for _, stack_params in stack_params.items():
-                for param_name, param_value in stack_params.items():
-                    click.echo("{} = {}".format(param_name, param_value))
-        else:
-            for stack_name, stack_parameters in stack_params.items():
-                if not stack_parameters:
-                    continue
-                if ":stack/" in stack_name:
-                    stack_name = stack_name.partition(":stack/")[2].split("/")[0]
-                click.echo(stack_name)
-                for param_name, param_value in stack_parameters.items():
-                    click.echo("\t{} = {}".format(param_name, param_value))
-                click.echo()
-    elif output_format == "yaml":
-        click.echo(dump(stack_params, default_flow_style=False))
+    if output_format == "yaml":
+        click.echo(safe_dump(stack_params, default_flow_style=False))
     elif output_format == "json":
         click.echo(json.dumps(stack_params, indent=True))
 

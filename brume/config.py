@@ -157,7 +157,7 @@ class Config:
                 git_commit=Config._git_commit(),
             )
             try:
-                Config.config = yaml.load(template.render(**template_env))
+                Config.config = yaml.safe_load(template.render(**template_env))
             except jinja2.exceptions.UndefinedError as err:
                 click.secho(
                     "[ERROR] {0} in {1}".format(err.message, config_file), err=True, fg="red"
